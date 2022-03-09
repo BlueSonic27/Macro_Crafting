@@ -127,16 +127,16 @@ Are you sure you want to delete this rotation?
         }
     })
 $confirmKeyTxt.Add_KeyUp({
-        scancodes($this, $_.keyCode, $_.KeyValue)
+        $this.Tag = scancodes($this, $_.keyCode, $_.KeyValue)
     })
 $foodBuffTxt.Add_KeyUp({
-        scancodes($this, $_.keyCode, $_.KeyValue)
+        $this.Tag = scancodes($this, $_.keyCode, $_.KeyValue)
     })
 $medicineTxt.Add_KeyUp({
-        scancodes($this, $_.keyCode, $_.KeyValue)
+        $this.Tag = scancodes($this, $_.keyCode, $_.KeyValue)
     })
 $craftLogTxt.Add_KeyUp({
-        scancodes($this, $_.keyCode, $_.KeyValue)
+        $this.Tag = scancodes($this, $_.keyCode, $_.KeyValue)
     })
 $saveKeybindBtn.Add_Click({
         $keybinds = $skillsGrid.DataSource | Select-Object Keybind, Scancode
@@ -186,20 +186,7 @@ $skillsGrid.Add_KeyDown({
         $_.SuppressKeyPress = $true
     })
 $skillsGrid.Add_KeyUp({
-        if (!($ignoreKeys).Contains($_.KeyValue)) {
-            [string]$mods = $_.modifiers
-            $mods = $mods.replace(', ', ' + ')
-            $key = $converter.Contains($_.KeyValue) ? $converter[$_.KeyValue] : $_.KeyCode
-            $scanCodes = @()
-            if ($mods -ne 'None') {
-                foreach ($mod in $mods.split(' + ')) {
-                    $scanCodes += $scanCodesModifiers[$mod]
-                }
-            }
-            $scanCodes += '0x' + ('{0:x}' -f $_.KeyValue).ToUpper()
-            $this.SelectedCells[2].Value = $mods -ne 'None' ? "$mods + $key" : $key
-            $this.SelectedCells[9].Value = $scanCodes -join ','
-        }
+    $this.Tag = scancodes($this, $_.keyCode, $_.KeyValue)
     })
 $skillsGrid.Add_CellValidating({
         if ($_.ColumnIndex -eq 1) { return }

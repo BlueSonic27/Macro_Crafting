@@ -204,6 +204,7 @@ $craftingGrid = New-Object System.Windows.Forms.DataGridView
 $craftingGrid.Dock = 1
 $craftingGrid.Height = 200
 $craftingGrid.ReadOnly = $true
+$craftingGrid.Columns.Add($marcoColumn)
 
 $levelLbl = New-Object System.Windows.Forms.Label
 $levelLbl.Text = 'Level'
@@ -510,7 +511,6 @@ foreach($button in ($ds.Tables[0].Rows | Select-Object -ExpandProperty Key)){
     $(Get-Variable -Name $button -ValueOnly).MaximumSize = New-Object System.Drawing.Size(43,41)
 }
 
-$craftingGrid.Columns.Add($marcoColumn)
 $keybindsTab.Controls.AddRange(@($saveKeybindBtn,$loadKeybindBtn,$medicinePanel,$foodBuffPanel,$craftLogPanel,$confirmPanel,$skillsGrid))
 $craftingTab.Controls.AddRange(@($craftGroup2,$craftGroup,$craftingGrid))
 $main.Controls.AddRange(@($expandCollapsePanel,$FormTabControl))

@@ -9,8 +9,8 @@ function scancodes($element) {
             }
         }
         $scanCodes += '0x' + ('{0:x}' -f $element[2]).ToUpper()
-        $element[0].Tag = $scanCodes -join ','
         $element[0].Text = $mods -ne 'None' ? "$mods + $key" : $key
+        return $scanCodes -join ','
     }
 }
 function expand {
