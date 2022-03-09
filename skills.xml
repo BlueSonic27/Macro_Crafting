@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Skills>
+	<Skill>
+		<ID>0</ID>
+		<Name>Basic Synthesis</Name>
+		<Keybind></Keybind>
+		<Level>1</Level>
+		<CP>0</CP>
+		<Description>Increases progress.</Description>
+		<Type>Step</Type>
+		<icon>icons\basicSynth.png</icon>
+		<Key>basicSynth</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>1</ID>
+		<Name>Rapid Synthesis</Name>
+		<Keybind></Keybind>
+		<Level>9</Level>
+		<CP>0</CP>
+		<Description>Increases progress.</Description>
+		<Type>Step</Type>
+		<icon>icons\rapidSynth.png</icon>
+		<Key>rapidSynth</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>2</ID>
+		<Name>Muscle Memory</Name>
+		<Keybind></Keybind>
+		<Level>54</Level>
+		<CP>6</CP>
+		<Description>Increases progress.</Description>
+		<Type>Step</Type>
+		<icon>icons\muscleMemory.png</icon>
+		<Key>muscleMemory</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>3</ID>
+		<Name>Careful Synthesis</Name>
+		<Keybind></Keybind>
+		<Level>62</Level>
+		<CP>7</CP>
+		<Description>Increases progress.</Description>
+		<Type>Step</Type>
+		<icon>icons\carefulSynth.png</icon>
+		<Key>carefulSynth</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>4</ID>
+		<Name>Focused Synthesis</Name>
+		<Keybind></Keybind>
+		<Level>67</Level>
+		<CP>5</CP>
+		<Description>Increases progress.</Description>
+		<Type>Step</Type>
+		<icon>icons\focusedSynth.png</icon>
+		<Key>focusedSynth</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>5</ID>
+		<Name>Groundwork</Name>
+		<Keybind></Keybind>
+		<Level>72</Level>
+		<CP>18</CP>
+		<Description>Increases progress at greater to durability. Efficiency decreases by half when durability is below durability.</Description>
+		<Type>Step</Type>
+		<icon>icons\groundwork.png</icon>
+		<Key>groundwork</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>6</ID>
+		<Name>Delicate Synthesis</Name>
+		<Keybind></Keybind>
+		<Level>76</Level>
+		<CP>32</CP>
+		<Description>Increases both progress and quality.</Description>
+		<Type>Step</Type>
+		<icon>icons\delicateSynth.png</icon>
+		<Key>delicateSynth</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>7</ID>
+		<Name>Observe</Name>
+		<Keybind></Keybind>
+		<Level>13</Level>
+		<CP>12</CP>
+		<Description>Do nothing for one step.</Description>
+		<Type>Step</Type>
+		<icon>icons\observe.png</icon>
+		<Key>observe</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>8</ID>
+		<Name>Intensive Synthesis</Name>
+		<Keybind></Keybind>
+		<Level>78</Level>
+		<CP>6</CP>
+		<Description>Increases progress.</Description>
+		<Type>Step</Type>
+		<icon>icons\intensiveSynth.png</icon>
+		<Key>intensiveSynth</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>9</ID>
+		<Name>Prudent Synthesis</Name>
+		<Keybind></Keybind>
+		<Level>88</Level>
+		<CP>18</CP>
+		<Description>Increases progress at half the durability.</Description>
+		<Type>Step</Type>
+		<icon>icons\prudentSynth.png</icon>
+		<Key>prudentSynth</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>10</ID>
+		<Name>Basic Touch</Name>
+		<Keybind></Keybind>
+		<Level>5</Level>
+		<CP>18</CP>
+		<Description>Increases quality.</Description>
+		<Type>Step</Type>
+		<icon>icons\basicTouch.png</icon>
+		<Key>basicTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>11</ID>
+		<Name>Standard Touch</Name>
+		<Keybind></Keybind>
+		<Level>18</Level>
+		<CP>32</CP>
+		<Description>Increases quality.</Description>
+		<Type>Step</Type>
+		<icon>icons\standardTouch.png</icon>
+		<Key>standardTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>12</ID>
+		<Name>Byregot's Blessing</Name>
+		<Keybind></Keybind>
+		<Level>50</Level>
+		<CP>24</CP>
+		<Description>Increases quality. Inner Quiet effect ends upon use.</Description>
+		<Type>Step</Type>
+		<icon>icons\byregotsBlessing.png</icon>
+		<Key>byregotsBlessing</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>13</ID>
+		<Name>Precise Touch</Name>
+		<Keybind></Keybind>
+		<Level>53</Level>
+		<CP>18</CP>
+		<Description>Increases quality.</Description>
+		<Type>Step</Type>
+		<icon>icons\preciseTouch.png</icon>
+		<Key>preciseTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>14</ID>
+		<Name>Prudent Touch</Name>
+		<Keybind></Keybind>
+		<Level>66</Level>
+		<CP>25</CP>
+		<Description>Increases quality at half the durability.</Description>
+		<Type>Step</Type>
+		<icon>icons\prudentTouch.png</icon>
+		<Key>prudentTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>15</ID>
+		<Name>Focused Touch</Name>
+		<Keybind></Keybind>
+		<Level>68</Level>
+		<CP>18</CP>
+		<Description>Increases quality.</Description>
+		<Type>Step</Type>
+		<icon>icons\focusedTouch.png</icon>
+		<Key>focusedTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>16</ID>
+		<Name>Reflect</Name>
+		<Keybind></Keybind>
+		<Level>69</Level>
+		<CP>6</CP>
+		<Description>Increases quality.</Description>
+		<Type>Step</Type>
+		<icon>icons\reflect.png</icon>
+		<Key>reflect</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>17</ID>
+		<Name>Preparatory Touch</Name>
+		<Keybind></Keybind>
+		<Level>71</Level>
+		<CP>40</CP>
+		<Description>Increases quality at a greater to durability.</Description>
+		<Type>Step</Type>
+		<icon>icons\preparatoryTouch.png</icon>
+		<Key>preparatoryTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>18</ID>
+		<Name>Trained Eye</Name>
+		<Keybind></Keybind>
+		<Level>80</Level>
+		<CP>250</CP>
+		<Description>Increases quality by 100%. Available only on the first step. Recipe level must be at least 10 levels below yours. Cannot be used with expert crafting recipes.</Description>
+		<Type>Step</Type>
+		<icon>icons\trainedEye.png</icon>
+		<Key>trainedEye</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>19</ID>
+		<Name>Advanced Touch</Name>
+		<Keybind></Keybind>
+		<Level>84</Level>
+		<CP>46</CP>
+		<Description>Increases quality.</Description>
+		<Type>Step</Type>
+		<icon>icons\advancedTouch.png</icon>
+		<Key>advancedTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>20</ID>
+		<Name>Trained Finesse</Name>
+		<Keybind></Keybind>
+		<Level>90</Level>
+		<CP>32</CP>
+		<Description>Increases quality at no to durability.</Description>
+		<Type>Step</Type>
+		<icon>icons\trainedFinesse.png</icon>
+		<Key>trainedFinesse</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>21</ID>
+		<Name>Master's Mend</Name>
+		<Keybind></Keybind>
+		<Level>7</Level>
+		<CP>88</CP>
+		<Description>Restores item durability by 30.</Description>
+		<Type>Buff</Type>
+		<icon>icons\mastersMind.png</icon>
+		<Key>mastersMind</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>22</ID>
+		<Name>Waste Not</Name>
+		<Keybind></Keybind>
+		<Level>15</Level>
+		<CP>56</CP>
+		<Description>Reduces loss of durability by 50% for the next four steps.</Description>
+		<Type>Buff</Type>
+		<icon>icons\wasteNot.png</icon>
+		<Key>wasteNot</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>23</ID>
+		<Name>Waste Not II</Name>
+		<Keybind></Keybind>
+		<Level>47</Level>
+		<CP>98</CP>
+		<Description>Reduces loss of durability by 50% for the next eight steps.</Description>
+		<Type>Buff</Type>
+		<icon>icons\wasteNot2.png</icon>
+		<Key>wasteNot2</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>24</ID>
+		<Name>Manipulation</Name>
+		<Keybind></Keybind>
+		<Level>65</Level>
+		<CP>96</CP>
+		<Description>Restores 5 points of durability after each step for the next eight steps. Requires completion of job quest to acquire.</Description>
+		<Type>Buff</Type>
+		<icon>icons\manipulation.png</icon>
+		<Key>manipulation</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>25</ID>
+		<Name>Veneration</Name>
+		<Keybind></Keybind>
+		<Level>15</Level>
+		<CP>18</CP>
+		<Description>Increases efficiency of Synthesis actions by 50% for the next four steps.</Description>
+		<Type>Buff</Type>
+		<icon>icons\veneration.png</icon>
+		<Key>veneration</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>26</ID>
+		<Name>Great Strides</Name>
+		<Keybind></Keybind>
+		<Level>21</Level>
+		<CP>32</CP>
+		<Description>Increases the efficiency of next Touch action by 100%. Effect active for three steps.</Description>
+		<Type>Buff</Type>
+		<icon>icons\greatStrides.png</icon>
+		<Key>greatStrides</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>27</ID>
+		<Name>Innovation</Name>
+		<Keybind></Keybind>
+		<Level>26</Level>
+		<CP>18</CP>
+		<Description>Increases efficiency of Touch actions by 50% for the next four steps.</Description>
+		<Type>Buff</Type>
+		<icon>icons\innovation.png</icon>
+		<Key>innovation</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>28</ID>
+		<Name>Final Appraisal</Name>
+		<Keybind></Keybind>
+		<Level>42</Level>
+		<CP>1</CP>
+		<Description>The next action that would complete item synthesis will instead leave one progress point remaining.</Description>
+		<Type>Buff</Type>
+		<icon>icons\finalAppraisal.png</icon>
+		<Key>finalAppraisal</Key>
+		<Scancode></Scancode>
+	</Skill>
+	<Skill>
+		<ID>29</ID>
+		<Name>Hasty Touch</Name>
+		<Keybind></Keybind>
+		<Level>9</Level>
+		<CP>0</CP>
+		<Description>Increases quality and requies no CP.</Description>
+		<Type>Step</Type>
+		<icon>icons\hastyTouch.png</icon>
+		<Key>hastyTouch</Key>
+		<Scancode></Scancode>
+	</Skill>
+</Skills>
