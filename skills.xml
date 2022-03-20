@@ -259,7 +259,7 @@
 		<Level>7</Level>
 		<CP>88</CP>
 		<Description>Restores item durability by 30.</Description>
-		<Type>Buff</Type>
+		<Type>Step</Type>
 		<icon>icons\mastersMind.png</icon>
 		<Key>mastersMind</Key>
 		<Scancode></Scancode>
