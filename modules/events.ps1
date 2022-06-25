@@ -94,7 +94,7 @@ $clearRotation.Add_Click({
         $muscleMemory.Enabled = $true    
     })
 $saveRecipeBtn.Add_Click({
-        $filename = ($null -eq $loadRecipeDropdown.SelectedItem) ? $loadRecipeDropdown.Text : $loadRecipeDropdown.SelectedItem;
+        $filename == ($null -eq $loadRecipeDropdown.SelectedItem) ? $loadRecipeDropdown.Text : $loadRecipeDropdown.SelectedItem;
         $rotation = @()
         foreach ($row in $craftingGrid.Rows) {
             $cell = $row.Cells[0].Value
@@ -112,7 +112,7 @@ $saveRecipeBtn.Add_Click({
         }
     })
 $deleteRecipeBtn.Add_Click({
-        $filename = ($loadRecipeDropdown.SelectedItem) ? $loadRecipeDropdown.SelectedItem : $false
+        $filename == ($loadRecipeDropdown.SelectedItem) ? $loadRecipeDropdown.SelectedItem : $false
         if ($filename) {
             if ([System.Windows.MessageBox]::Show(@"
 Are you sure you want to delete this rotation?
@@ -172,15 +172,15 @@ $levelNumeric.Add_TextChanged({
             $id = $skill.Key
             $level = [int]$skill.Level
             if ($id -ne 'manipulation') {
-                $(Get-Variable -Name $id -ValueOnly).Enabled = ($level -gt $this.Value) ? $false : $true
+                $(Get-Variable -Name $id -ValueOnly).Enabled == ($level -gt $this.Value) ? $false : $true
             }
             else {
-                $manipulation.Enabled = ($level -gt $this.Value) -or ($manipulationCheck.Checked -ne $true) ? $false : $true
+                $manipulation.Enabled == ($level -gt $this.Value) -or ($manipulationCheck.Checked -ne $true) ? $false : $true
             }
         }
     })
 $manipulationCheck.Add_Click({
-        $manipulation.Enabled = ($levelNumeric.Value -ge 65 ) ? $this.Checked : $false
+        $manipulation.Enabled == ($levelNumeric.Value -ge 65 ) ? $this.Checked : $false
     })
 $skillsGrid.Add_KeyDown({
         $_.SuppressKeyPress = $true
@@ -224,7 +224,7 @@ $craftingGrid.Add_CellMouseUp({
             $firstStep = $this.Rows[0].Cells[0].Value
             if ($rowIndex -ne $this.NewRowIndex) {
                 $this.Rows.RemoveAt($rowIndex)
-                $clearRotation.Visible = ($this.NewRowIndex -gt 0) ? $true : $false
+                $clearRotation.Visible == ($this.NewRowIndex -gt 0) ? $true : $false
             }
             else {
                 $this.Rows[$rowIndex].Cells[0].Value = ''

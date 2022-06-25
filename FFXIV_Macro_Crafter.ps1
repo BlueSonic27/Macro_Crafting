@@ -1,3 +1,5 @@
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
+
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
 Add-Type @'
@@ -515,8 +517,7 @@ $keybindsTab.Controls.AddRange(@($saveKeybindBtn,$loadKeybindBtn,$medicinePanel,
 $craftingTab.Controls.AddRange(@($craftGroup2,$craftGroup,$craftingGrid))
 $main.Controls.AddRange(@($expandCollapsePanel,$FormTabControl))
 
-. "$PSScriptRoot\modules\functions.ps1"
-. "$PSScriptRoot\modules\events.ps1"
+Get-ChildItem -Path "$PSScriptRoot\modules" | ForEach-Object {. $($_.FullName)}
 
 $main.ShowDialog((New-Object System.Windows.Forms.Form -Property @{TopMost = $true }))
 $main.Dispose()
