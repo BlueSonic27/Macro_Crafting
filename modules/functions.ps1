@@ -74,6 +74,7 @@ function craft {
         $timer.Enabled = $True
         $main.Text = 'FFXIV Macro Crafter - Running'
         Start-Job -Name Craft -ScriptBlock {
+            Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info);' -Name U32 -Namespace W;
             Add-Type @'
             using System;
             using System.Runtime.InteropServices;
@@ -103,7 +104,7 @@ function craft {
             }
 '@
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
-            [NativeMethods]::EnableWindow($ffxivHandle, 0) | Out-Null
+            #[NativeMethods]::EnableWindow($ffxivHandle, 0) | Out-Null
             $confirmDelay = 1.2
             $loopDelay = 1.7
             $currenTime = Get-Date
@@ -134,14 +135,9 @@ function craft {
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                     Start-Sleep $confirmDelay
                 }
-                [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
-                [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
-                Start-Sleep $confirmDelay
-                [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
-                [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
-                Start-Sleep $confirmDelay
-                [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
-                [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
+                [W.U32]::mouse_event(0x02 -bor 0x8000 -bor 0x01, 850*(65535/1920), 772*(65535/1080), 0, 0);
+                Start-Sleep -m 50
+                [W.U32]::mouse_event(0x04,0,0,0,0);
                 Start-Sleep $confirmDelay
                 foreach ($step in $args[1]) {
                     $scancodes = ($step.Sendkeys).Split(',')
@@ -166,7 +162,7 @@ function craft {
                 Start-Sleep $loopDelay
                 "Crafted: $($i+1)  Remaining: $($args[0]-($i+1))"
             }
-            [NativeMethods]::EnableWindow($ffxivHandle, 1) | Out-Null
+            #[NativeMethods]::EnableWindow($ffxivHandle, 1) | Out-Null
         } -ArgumentList $craftNumeric.Value, $macros, $confirmKey, $medicineKey, $useMedicine.Checked, $foodbuffKey, $useFoodbuff.Checked, $craftingLog
     }
     else {
