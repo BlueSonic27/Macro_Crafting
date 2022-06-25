@@ -1,7 +1,12 @@
 function scancodes($element) {
     if (!($ignoreKeys).Contains($element[2])) {
         $mods = ([string]$_.modifiers).Replace(', ', ' + ')
-        $key == $converter.Contains($element[2]) ? $converter[$element[2]] : $element[1]
+        if($converter.Contains($element[2])) {
+            $key = $converter[$element[2]]
+        }
+        else {
+            $key = $element[1]
+        }
         $scanCodes = @()
         if ($mods -ne 'None') {
             foreach ($mod in $mods.split(' + ')) {
@@ -9,7 +14,12 @@ function scancodes($element) {
             }
         }
         $scanCodes += '0x' + ('{0:x}' -f $element[2]).ToUpper()
-        $element[0].Text == $mods -ne 'None' ? "$mods + $key" : $key
+        if($mods -ne 'None') {
+            $element[0].Text = "$mods + $key"
+        }
+        else {
+            $element[0].Text = $key
+        }
         return $scanCodes -join ','
     }
 }
@@ -51,8 +61,8 @@ function loadKeybinds {
 }
 function craft {
     $convertDelay = @{
-        Step = 2.6
-        Buff = 1.6
+        Step = 2500
+        Buff = 1300
     }
     $macros = @()
     for ($i = 0; $i -lt ($craftingGrid.Rows.Count - 1); $i++) {
@@ -108,8 +118,8 @@ function craft {
 '@
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
             #[NativeMethods]::EnableWindow($ffxivHandle, 0) | Out-Null
-            $confirmDelay = 1.2
-            $loopDelay = 1.7
+            $confirmDelay = 1200
+            $loopDelay = 1700
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 30 -Seconds 10)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 15 -Seconds 10)
@@ -136,35 +146,35 @@ function craft {
                     Start-Sleep 2
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
-                    Start-Sleep $confirmDelay
+                    Start-Sleep -m $confirmDelay
                 }
                 [NativeMethods]::BlockInput(1) | Out-Null
-                Start-Sleep $confirmDelay
                 [W.U32]::mouse_event(0x02 -bor 0x8000 -bor 0x01, 850*(65535/1920), 772*(65535/1080), 0, 0);
                 Start-Sleep -m 50
                 [W.U32]::mouse_event(0x04,0,0,0,0);
+                Start-Sleep -m $confirmDelay
                 [NativeMethods]::BlockInput(0) | Out-Null
                 foreach ($step in $args[1]) {
                     $scancodes = ($step.Sendkeys).Split(',')
                     if ($scancodes.Length -gt 1) {
                         #Double key keybind
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press keys
-                        Start-Sleep -Milliseconds 50
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[1], 0) | Out-Null 
-                        Start-Sleep -Milliseconds 50
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[1], 0) | Out-Null #Release keys
-                        Start-Sleep -Milliseconds 50
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null
                     }
                     else {
                         #Single key keybind
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press key
-                        Start-Sleep -Milliseconds 50
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null #Release key
                     }
-                    Start-Sleep $step.Delay
+                    Start-Sleep -m $step.Delay
                 }
-                Start-Sleep $loopDelay
+                Start-Sleep -m $loopDelay
                 "Crafted: $($i+1)  Remaining: $($args[0]-($i+1))"
             }
             #[NativeMethods]::EnableWindow($ffxivHandle, 1) | Out-Null

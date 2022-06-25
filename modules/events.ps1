@@ -94,7 +94,12 @@ $clearRotation.Add_Click({
         $muscleMemory.Enabled = $true    
     })
 $saveRecipeBtn.Add_Click({
-        $filename == ($null -eq $loadRecipeDropdown.SelectedItem) ? $loadRecipeDropdown.Text : $loadRecipeDropdown.SelectedItem;
+        if ($null -eq $loadRecipeDropdown.SelectedItem) {
+            $filename = $loadRecipeDropdown.Text
+        }
+        else {
+            $filename = $loadRecipeDropdown.SelectedItem
+        }
         $rotation = @()
         foreach ($row in $craftingGrid.Rows) {
             $cell = $row.Cells[0].Value
@@ -112,7 +117,12 @@ $saveRecipeBtn.Add_Click({
         }
     })
 $deleteRecipeBtn.Add_Click({
-        $filename == ($loadRecipeDropdown.SelectedItem) ? $loadRecipeDropdown.SelectedItem : $false
+        if ($loadRecipeDropdown.SelectedItem) {
+            $filename = $loadRecipeDropdown.SelectedItem
+        }
+        else {
+            $filename = $false
+        }
         if ($filename) {
             if ([System.Windows.MessageBox]::Show(@"
 Are you sure you want to delete this rotation?
@@ -172,15 +182,29 @@ $levelNumeric.Add_TextChanged({
             $id = $skill.Key
             $level = [int]$skill.Level
             if ($id -ne 'manipulation') {
-                $(Get-Variable -Name $id -ValueOnly).Enabled == ($level -gt $this.Value) ? $false : $true
+                if ($level -gt $this.Value) {
+                    $(Get-Variable -Name $id -ValueOnly).Enabled = $false
+                }
+                else {
+                    $(Get-Variable -Name $id -ValueOnly).Enabled = $true
+                }
             }
             else {
-                $manipulation.Enabled == ($level -gt $this.Value) -or ($manipulationCheck.Checked -ne $true) ? $false : $true
+                if(($level -gt $this.Value) -or ($manipulationCheck.Checked -ne $true)) {
+                    $manipulation.Enabled = $false
+                }
+                else {
+                    $manipulation.Enabled = $true
+                }
             }
         }
     })
 $manipulationCheck.Add_Click({
-        $manipulation.Enabled == ($levelNumeric.Value -ge 65 ) ? $this.Checked : $false
+        if ($levelNumeric.Value -ge 65 ) {
+            $manipulation.Enabled = $this.Checked}
+        else {
+            $manipulation.Enabled = $false
+        }
     })
 $skillsGrid.Add_KeyDown({
         $_.SuppressKeyPress = $true
@@ -224,7 +248,12 @@ $craftingGrid.Add_CellMouseUp({
             $firstStep = $this.Rows[0].Cells[0].Value
             if ($rowIndex -ne $this.NewRowIndex) {
                 $this.Rows.RemoveAt($rowIndex)
-                $clearRotation.Visible == ($this.NewRowIndex -gt 0) ? $true : $false
+                if ($this.NewRowIndex -gt 0) {
+                    $clearRotation.Visible = $true
+                }
+                else {
+                    $clearRotation.Visible = $false
+                }
             }
             else {
                 $this.Rows[$rowIndex].Cells[0].Value = ''
