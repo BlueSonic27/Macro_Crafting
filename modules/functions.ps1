@@ -1,3 +1,42 @@
+
+$converter = @{
+    33 = 'PGUP'
+    34 = 'PGDN'
+    45 = 'INS'
+    48 = '0'
+    49 = '1'
+    50 = '2'
+    51 = '3'
+    52 = '4'
+    53 = '5'
+    54 = '6'
+    55 = '7'
+    56 = '8'
+    57 = '9'
+    106 = 'MULTIPLY'
+    107 = 'ADD'
+    109 = 'MINUS'
+    110 = 'DECIMAL'
+    111 = 'DIVIDE'
+    186 = ';'
+    187 = '='
+    188 = ','
+    189 = '-'
+    190 = '.'
+    191 = '/'
+    192 = "'"
+    219 = '['
+    220 = '\'
+    221 = ']'
+    222 = '#'
+    223 = '`'
+}
+$scanCodesModifiers = @{
+    'Shift'   = '0x10'
+    'Control' = '0x11'
+    'Alt'     = '0x12'
+}
+$ignoreKeys = @(9,16,17,18,20,91,144,145)
 function scancodes($element) {
     if (!($ignoreKeys).Contains($element[2])) {
         $mods = ([string]$_.modifiers).Replace(', ', ' + ')
@@ -84,45 +123,24 @@ function craft {
         $timer.Enabled = $True
         $main.Text = 'FFXIV Macro Crafter - Running'
         Start-Job -Name Craft -ScriptBlock {
-            Add-Type -MemberDefinition @'
-            [DllImport("user32.dll")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info);
-            [DllImport("user32.dll")] public static extern void SetFocus(int hWnd);
-'@ -Name U32 -Namespace W;
             Add-Type @'
             using System;
             using System.Runtime.InteropServices;
             public static class NativeMethods {
-                [DllImport("user32.dll")]
-                public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
-
-
-                [DllImport("user32.dll")]
-                public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
-
-
-                [DllImport("user32.dll")]
-                public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-
-
-                [DllImport("user32.dll", SetLastError = true)]
-                public static extern bool SetForegroundWindow(IntPtr hWnd);
-
-
-                [DllImport("user32.dll")]
-                public static extern bool EnableWindow(IntPtr hWnd, int bEnable);
-
-
-                [DllImport("user32.dll")]
-                public static extern bool BlockInput(bool fBlockIt);
+                [DllImport("user32.dll")] public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
+                [DllImport("user32.dll")] public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
+                [DllImport("user32.dll", SetLastError = true)] public static extern bool SetForegroundWindow(IntPtr hWnd);
+                [DllImport("user32.dll")] public static extern bool BlockInput(bool fBlockIt);
+                [DllImport("user32.dll")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info);
             }
 '@
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
-            #[NativeMethods]::EnableWindow($ffxivHandle, 0) | Out-Null
             $confirmDelay = 1200
             $loopDelay = 1700
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 30 -Seconds 10)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 15 -Seconds 10)
+            [NativeMethods]::SetForegroundWindow($ffxivHandle)
             for ($i = 0; $i -lt $args[0]; $i++) {
                 $currenTime = Get-Date
                 if ($args[4] -eq $true -or $args[6] -eq $true) {
@@ -149,9 +167,11 @@ function craft {
                     Start-Sleep -m $confirmDelay
                 }
                 [NativeMethods]::BlockInput(1) | Out-Null
-                [W.U32]::mouse_event(0x02 -bor 0x8000 -bor 0x01, 850*(65535/1920), 772*(65535/1080), 0, 0);
+                [NativeMethods]::SetForegroundWindow($ffxivHandle)
+                Start-Sleep -m 500
+                [NativeMethods]::mouse_event(0x02 -bor 0x8000 -bor 0x01, 850*(65535/1920), 772*(65535/1080), 0, 0);
                 Start-Sleep -m 50
-                [W.U32]::mouse_event(0x04,0,0,0,0);
+                [NativeMethods]::mouse_event(0x04,0,0,0,0);
                 Start-Sleep -m $confirmDelay
                 [NativeMethods]::BlockInput(0) | Out-Null
                 foreach ($step in $args[1]) {
@@ -177,7 +197,6 @@ function craft {
                 Start-Sleep -m $loopDelay
                 "Crafted: $($i+1)  Remaining: $($args[0]-($i+1))"
             }
-            #[NativeMethods]::EnableWindow($ffxivHandle, 1) | Out-Null
         } -ArgumentList $craftNumeric.Value, $macros, $confirmKey, $medicineKey, $useMedicine.Checked, $foodbuffKey, $useFoodbuff.Checked, $craftingLog
     }
     else {

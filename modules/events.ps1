@@ -1,3 +1,4 @@
+$importTextCheck = $false
 $keybindsTab.Add_Enter({
         $skillsGrid.Rows[0].Cells[2].Selected = $true
     })
@@ -272,12 +273,11 @@ $craftingGrid.Add_CellMouseUp({
     })
 $main.Add_Closing({
         if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
-            $ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
-            [NativeMethods]::EnableWindow($ffxivHandle, 1)
             Stop-Job -Name Craft
         }
     })
 $main.Add_Load({
+        $tooltip1 = New-Object System.Windows.Forms.ToolTip
         $skillsGrid.AutoSizeColumnsMode = 'AllCells'
         $skillsGrid.ColumnHeadersHeightSizeMode = 1
         $skillsGrid.AllowUserToAddRows = $false

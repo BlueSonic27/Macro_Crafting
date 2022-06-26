@@ -3,64 +3,15 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing, PresentationFramework
 [System.Windows.Forms.Application]::EnableVisualStyles()
 Add-Type @'
-using System;
-using System.Runtime.InteropServices;
 public static class NativeMethods {
     [DllImport("user32.dll")]
-    public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
-
-
-    [DllImport("user32.dll")]
     public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-
-
-    [DllImport("user32.dll")]
-    public static extern bool EnableWindow(IntPtr hWnd, int bEnable);
 }
 '@
 [NativeMethods]::ShowWindowAsync((Get-Process -id $pid).MainWindowHandle, 2) | Out-Null
-$converter = @{
-    33 = 'PGUP'
-    34 = 'PGDN'
-    45 = 'INS'
-    48 = '0'
-    49 = '1'
-    50 = '2'
-    51 = '3'
-    52 = '4'
-    53 = '5'
-    54 = '6'
-    55 = '7'
-    56 = '8'
-    57 = '9'
-    106 = 'MULTIPLY'
-    107 = 'ADD'
-    109 = 'MINUS'
-    110 = 'DECIMAL'
-    111 = 'DIVIDE'
-    186 = ';'
-    187 = '='
-    188 = ','
-    189 = '-'
-    190 = '.'
-    191 = '/'
-    192 = "'"
-    219 = '['
-    220 = '\'
-    221 = ']'
-    222 = '#'
-    223 = '`'
-}
-$scanCodesModifiers = @{
-    'Shift'   = '0x10'
-    'Control' = '0x11'
-    'Alt'     = '0x12'
-}
-$ignoreKeys = @(9,16,17,18,20,91,144,145)
 $ds = New-Object System.Data.Dataset
 $null = $ds.ReadXml("$PSScriptRoot\skills.xml")
 $listRotations = $(Get-ChildItem "$PSScriptRoot\Rotations\*.json").BaseName
-$importTextCheck = $false
 if(!(Test-Path -Path "$PSScriptRoot\keybinds.json" -PathType Leaf) -or !(Test-Path -Path "$PSScriptRoot\controls.json" -PathType Leaf)) {
     [System.Windows.MessageBox]::Show('Please configure your keybinds before using this tool','Information','OK','Information')
 }
@@ -404,8 +355,6 @@ $finalAppraisal.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\fi
 $hastyTouch = New-Object System.Windows.Forms.Button
 $hastyTouch.Tag = 29
 $hastyTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\hastyTouch.png")
-
-$tooltip1 = New-Object System.Windows.Forms.ToolTip
 
 $progress = New-Object System.Windows.Forms.Panel
 $progress.Height = 41
