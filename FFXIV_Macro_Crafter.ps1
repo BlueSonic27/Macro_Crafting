@@ -3,6 +3,8 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing, PresentationFramework
 [System.Windows.Forms.Application]::EnableVisualStyles()
 Add-Type @'
+using System;
+using System.Runtime.InteropServices;
 public static class NativeMethods {
     [DllImport("user32.dll")]
     public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);

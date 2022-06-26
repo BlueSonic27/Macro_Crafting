@@ -129,7 +129,7 @@ function craft {
             public static class NativeMethods {
                 [DllImport("user32.dll")] public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
                 [DllImport("user32.dll")] public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
-                [DllImport("user32.dll", SetLastError = true)] public static extern bool SetForegroundWindow(IntPtr hWnd);
+                [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
                 [DllImport("user32.dll")] public static extern bool BlockInput(bool fBlockIt);
                 [DllImport("user32.dll")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info);
             }
