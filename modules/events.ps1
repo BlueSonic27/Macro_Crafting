@@ -270,6 +270,7 @@ $craftingGrid.Add_CellMouseUp({
 $main.Add_Closing({
         if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
             Stop-Job -Name Craft
+            [NativeMethods]::BlockInput(0)
         }
     })
 $main.Add_Load({
