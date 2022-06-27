@@ -135,12 +135,11 @@ function craft {
             }
 '@
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
-            $confirmDelay = 1200
+            $confirmDelay = 1300
             $loopDelay = 1700
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 30 -Seconds 10)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 15 -Seconds 10)
-            [NativeMethods]::SetForegroundWindow($ffxivHandle)
             for ($i = 0; $i -lt $args[0]; $i++) {
                 $currenTime = Get-Date
                 if ($args[4] -eq $true -or $args[6] -eq $true) {
@@ -167,11 +166,15 @@ function craft {
                     Start-Sleep -m $confirmDelay
                 }
                 [NativeMethods]::BlockInput(1) | Out-Null
-                [NativeMethods]::SetForegroundWindow($ffxivHandle)
-                Start-Sleep -m 500
-                [NativeMethods]::mouse_event(0x02 -bor 0x8000 -bor 0x01, 850*(65535/1920), 772*(65535/1080), 0, 0);
-                Start-Sleep -m 50
-                [NativeMethods]::mouse_event(0x04,0,0,0,0);
+                Start-Sleep -m 100
+                [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
+                Start-Sleep -m ($confirmDelay - 500)
+                [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
+                Start-Sleep -m ($confirmDelay - 500)
+                [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                 Start-Sleep -m $confirmDelay
                 [NativeMethods]::BlockInput(0) | Out-Null
                 foreach ($step in $args[1]) {

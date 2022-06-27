@@ -44,14 +44,10 @@ $classDropdown.Add_SelectionChangeCommitted({
 $timer.Add_Tick({
         if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
             $jobOutput = Get-Job -Name Craft | Receive-Job -Keep | Select-Object -Last 1
-            if ($jobOutput -ne '' -or $jobOutput -ne $null) {
-                $main.Text = "FFXIV Macro Crafter - Running  $jobOutput"
-            }
             $craftBtn.Text = 'Stop'
+            $main.Text = "FFXIV Macro Crafter - Running - $jobOutput"
         }
         else {
-            $ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
-            [NativeMethods]::EnableWindow($ffxivHandle, 1) | Out-Null
             $main.Text = 'FFXIV Macro Crafter'
             $craftBtn.Text = 'Craft'
             $timer.Enabled = $false
@@ -234,7 +230,7 @@ $skillsGrid.Add_CellMouseUp({
         }
     })
 $craftBtn.Add_click({
-        if ($main.Text -like '*Running*') {
+        if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
             Stop-Job -Name Craft
             $this.Text = 'Craft'
         }
