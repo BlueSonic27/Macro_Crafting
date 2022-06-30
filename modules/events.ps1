@@ -107,7 +107,7 @@ $saveRecipeBtn.Add_Click({
         }
         else {
             New-Item -Path "$PSScriptRoot\..\Rotations" -ItemType Directory -Force
-            $rotation | ConvertTo-Json -AsArray -Compress | Out-File -FilePath "$PSScriptRoot\..\Rotations\$filename.json"  -NoNewline
+            ConvertTo-Json -InputObject $rotation -Compress | Out-File -FilePath "$PSScriptRoot\..\Rotations\$filename.json" -NoNewline
             $loadRecipeDropdown.Items.Clear()
             $loadRecipeDropdown.Items.AddRange((Get-ChildItem "$PSScriptRoot\..\Rotations\*.json").BaseName)
             [System.Windows.MessageBox]::Show('Rotation saved', 'Information', 'OK', 'Information')
