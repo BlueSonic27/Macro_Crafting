@@ -100,8 +100,8 @@ function loadKeybinds {
 }
 function craft {
     $convertDelay = @{
-        Step = 2500
-        Buff = 1300
+        Step = 2600
+        Buff = 1400
     }
     $macros = @()
     for ($i = 0; $i -lt ($craftingGrid.Rows.Count - 1); $i++) {
@@ -135,7 +135,7 @@ function craft {
 '@
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
             $confirmDelay = 1300
-            $loopDelay = 1700
+            $loopDelay = 1800
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 30 -Seconds 10)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 15 -Seconds 10)
