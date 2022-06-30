@@ -185,17 +185,14 @@ function craft {
                     if ($scancodes.Length -gt 1) {
                         #Double key keybind
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press keys
-                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[1], 0) | Out-Null 
                         Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[1], 0) | Out-Null #Release keys
-                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null
                     }
                     else {
                         #Single key keybind
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press key
-                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null #Release key
                     }
                     Start-Sleep -m $step.Delay
