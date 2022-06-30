@@ -123,15 +123,14 @@ function craft {
         $timer.Enabled = $True
         $main.Text = 'FFXIV Macro Crafter - Running'
         Start-Job -Name Craft -ScriptBlock {
+            Add-Type -AssemblyName System.Windows.Forms
             Add-Type @'
             using System;
             using System.Runtime.InteropServices;
             public static class NativeMethods {
                 [DllImport("user32.dll")] public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
                 [DllImport("user32.dll")] public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
-                [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
                 [DllImport("user32.dll")] public static extern bool BlockInput(bool fBlockIt);
-                [DllImport("user32.dll")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info);
             }
 '@
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
@@ -165,6 +164,10 @@ function craft {
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                     Start-Sleep -m $confirmDelay
                 }
+                do{
+                   $mouseButtons = [System.Windows.Forms.UserControl]::MouseButtons
+                   Start-Sleep 1
+                } while ($mouseButtons -ne 'None')
                 [NativeMethods]::BlockInput(1) | Out-Null
                 Start-Sleep -m 100
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key

@@ -45,7 +45,7 @@ $timer.Add_Tick({
         if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
             $jobOutput = Get-Job -Name Craft | Receive-Job -Keep | Select-Object -Last 1
             $craftBtn.Text = 'Stop'
-            $main.Text = "FFXIV Macro Crafter - Running - $jobOutput"
+            $main.Text = "FFXIV Macro Crafter - Running  $jobOutput"
         }
         else {
             $main.Text = 'FFXIV Macro Crafter'
