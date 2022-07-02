@@ -139,30 +139,29 @@ function craft {
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 30 -Seconds 10)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 15 -Seconds 10)
+            $craftingbuffs = ($args[6] -eq $true) -or ($args[4] -eq $true)
             for ($i = 0; $i -lt $args[0]; $i++) {
                 $currenTime = Get-Date
-                if ($args[4] -eq $true -or $args[6] -eq $true) {
-                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[7], 0) | Out-Null #Open crafting Log
+                $buffTimestamps = ($currenTime -gt $foodBuffTimestamp) -or ($currenTime -gt $medicineTimestamp)
+                if ($craftingbuffs -eq $true -and ($i -eq 0 -or $buffTimestamps -eq $true)) {
+                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[7], 0) | Out-Null #Close crafting Log
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[7], 0) | Out-Null
-                    Start-Sleep 3
-                    if ($currenTime -gt $foodBuffTimestamp -or $i -eq 0) {
+                    Start-Sleep 2
+                    if ($args[6] -eq $true) {
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[5], 0) | Out-Null #Use Foodbuff
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[5], 0) | Out-Null
                         $foodBuffTimestamp = (Get-Date) + (New-Timespan -Minutes 30)
-                        Start-Sleep 3
+                        Start-Sleep 4
                     }
-                    if ($currenTime -gt $medicineTimestamp -or $i -eq 0) {
+                    if ($args[4] -eq $true) {
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[3], 0) | Out-Null #Use Medicine
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[3], 0) | Out-Null
                         $medicineTimestamp = (Get-Date) + (New-Timespan -Minutes 15)
-                        Start-Sleep 3
+                        Start-Sleep 4
                     }
-                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[7], 0) | Out-Null #Close Crafting Log
+                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[7], 0) | Out-Null #Open Crafting Log
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[7], 0) | Out-Null
                     Start-Sleep 2
-                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
-                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
-                    Start-Sleep -m $confirmDelay
                 }
                 do{
                    $mouseButtons = [System.Windows.Forms.UserControl]::MouseButtons
