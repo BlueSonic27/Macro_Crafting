@@ -169,6 +169,11 @@ function craft {
                 } while ($mouseButtons -ne 'None')
                 [NativeMethods]::BlockInput(1) | Out-Null
                 Start-Sleep -m 100
+                if ($craftingbuffs -eq $true) {
+                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                    [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
+                    Start-Sleep -m ($confirmDelay - 500)
+                }
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                 Start-Sleep -m ($confirmDelay - 500)
