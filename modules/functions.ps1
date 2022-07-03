@@ -101,7 +101,7 @@ function loadKeybinds {
 function craft {
     $convertDelay = @{
         Step = 2600
-        Buff = 1400
+        Buff = 1600
     }
     $macros = @()
     for ($i = 0; $i -lt ($craftingGrid.Rows.Count - 1); $i++) {
@@ -134,32 +134,36 @@ function craft {
             }
 '@
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
-            $confirmDelay = 1300
+            $confirmDelay = 1500
             $loopDelay = 1800
             $currenTime = Get-Date
-            $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 30 -Seconds 10)
-            $medicineTimestamp = $currenTime + (New-Timespan -Minutes 15 -Seconds 10)
+            $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 29)
+            $medicineTimestamp = $currenTime + (New-Timespan -Minutes 14)
             $craftingbuffs = ($args[6] -eq $true) -or ($args[4] -eq $true)
             for ($i = 0; $i -lt $args[0]; $i++) {
                 $currenTime = Get-Date
                 $buffTimestamps = ($currenTime -gt $foodBuffTimestamp) -or ($currenTime -gt $medicineTimestamp)
                 if ($craftingbuffs -eq $true -and ($i -eq 0 -or $buffTimestamps -eq $true)) {
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[7], 0) | Out-Null #Close crafting Log
+                    Start-Sleep -m 50
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[7], 0) | Out-Null
                     Start-Sleep 2
                     if ($args[6] -eq $true) {
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[5], 0) | Out-Null #Use Foodbuff
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[5], 0) | Out-Null
-                        $foodBuffTimestamp = (Get-Date) + (New-Timespan -Minutes 30)
+                        $foodBuffTimestamp = (Get-Date) + (New-Timespan -Minutes 29)
                         Start-Sleep 4
                     }
                     if ($args[4] -eq $true) {
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[3], 0) | Out-Null #Use Medicine
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[3], 0) | Out-Null
-                        $medicineTimestamp = (Get-Date) + (New-Timespan -Minutes 15)
+                        $medicineTimestamp = (Get-Date) + (New-Timespan -Minutes 14)
                         Start-Sleep 4
                     }
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[7], 0) | Out-Null #Open Crafting Log
+                    Start-Sleep -m 50
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[7], 0) | Out-Null
                     Start-Sleep 2
                 }
@@ -171,16 +175,20 @@ function craft {
                 Start-Sleep -m 100
                 if ($craftingbuffs -eq $true) {
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                    Start-Sleep -m 50
                     [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                     Start-Sleep -m ($confirmDelay - 500)
                 }
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                Start-Sleep -m 50
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                 Start-Sleep -m ($confirmDelay - 500)
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                Start-Sleep -m 50
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                 Start-Sleep -m ($confirmDelay - 500)
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $args[2], 0) | Out-Null #Press Confirm Key
+                Start-Sleep -m 50
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                 Start-Sleep -m $confirmDelay
                 [NativeMethods]::BlockInput(0) | Out-Null
@@ -189,14 +197,17 @@ function craft {
                     if ($scancodes.Length -gt 1) {
                         #Double key keybind
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press keys
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[1], 0) | Out-Null 
                         Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[1], 0) | Out-Null #Release keys
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null
                     }
                     else {
                         #Single key keybind
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press key
+                        Start-Sleep -m 50
                         [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null #Release key
                     }
                     Start-Sleep -m $step.Delay
