@@ -104,7 +104,8 @@ function craft {
         Buff = 1600
     }
     $macros = @()
-    for ($i = 0; $i -lt ($craftingGrid.Rows.Count - 1); $i++) {
+    $numSteps = $craftingGrid.Rows.Count - 1
+    for ($i = 0; $i -lt $numSteps; $i++) {
         $id = $craftingGrid.Rows[$i].Cells[0].Value
         $skill = $skillsGrid.Rows[$id].Cells
         $delay = $convertDelay[$skill[6].Value]
@@ -131,20 +132,35 @@ function craft {
                 [DllImport("user32.dll")] public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
                 [DllImport("user32.dll")] public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
                 [DllImport("user32.dll")] public static extern bool BlockInput(bool fBlockIt);
+                [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
+                [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
                 [DllImport("kernel32.dll", CharSet = CharSet.Auto,SetLastError = true)]
                 public static extern void SetThreadExecutionState(uint esFlags);
             }
+            public struct RECT {
+                public int Left;
+                public int Top;
+                public int Right;
+                public int Bottom;
+            }
 '@
+            [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
             $ES_CONTINUOUS = [uint32]"0x80000000"
             $ES_DISPLAY_REQUIRED = [uint32]"0x00000002"
             [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_DISPLAY_REQUIRED)
-            [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
             $confirmDelay = 1500
             $loopDelay = 1800
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 29)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 14)
             $craftingbuffs = ($args[6] -eq $true) -or ($args[4] -eq $true)
+            $Rectangle = New-Object RECT
+            [NativeMethods]::GetWindowRect($ffxivHandle, [ref]$Rectangle)
+            $Height = $Rectangle.Bottom - $Rectangle.Top
+            $Width = $Rectangle.Right - $Rectangle.Left
+            $bitmap = New-Object System.Drawing.Bitmap $Width, $Height
+            $graphic = [System.Drawing.Graphics]::FromImage($bitmap)
+            $steps = $args[1].Count
             for ($i = 0; $i -lt $args[0]; $i++) {
                 $currenTime = Get-Date
                 $buffTimestamps = ($currenTime -gt $foodBuffTimestamp) -or ($currenTime -gt $medicineTimestamp)
@@ -197,29 +213,40 @@ function craft {
                 [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $args[2], 0) | Out-Null #Release Confirm Key
                 Start-Sleep -m $confirmDelay
                 [NativeMethods]::BlockInput(0) | Out-Null
+                $j = 0
                 foreach ($step in $args[1]) {
+                    $j += 1
                     $scancodes = ($step.Sendkeys).Split(',')
-                    if ($scancodes.Length -gt 1) {
-                        #Double key keybind
-                        [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press keys
-                        Start-Sleep -m 50
-                        [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[1], 0) | Out-Null 
-                        Start-Sleep -m 50
-                        [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[1], 0) | Out-Null #Release keys
-                        Start-Sleep -m 50
-                        [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null
-                    }
-                    else {
-                        #Single key keybind
-                        [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press key
-                        Start-Sleep -m 50
-                        [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null #Release key
+                    $hdc = $graphic.GetHdc()
+                    [NativeMethods]::PrintWindow($ffxivHandle,$hdc, 0)
+                    $graphic.ReleaseHdc()
+                    $pixel = $bitmap.GetPixel(283, 281)
+                    $rgb = $pixel.R -eq 181 -and $pixel.G -eq 255 -and $pixel.B -eq 181
+                    if (($rgb -eq $false -and $j -lt $steps) -or ($rgb -eq $true -and $j -eq $steps)) {
+                        if ($scancodes.Length -gt 1) {
+                            #Double key keybind
+                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press keys
+                            Start-Sleep -m 50
+                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[1], 0) | Out-Null 
+                            Start-Sleep -m 50
+                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[1], 0) | Out-Null #Release keys
+                            Start-Sleep -m 50
+                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null
+                        }
+                        else {
+                            #Single key keybind
+                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press key
+                            Start-Sleep -m 50
+                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null #Release key
+                        }
                     }
                     Start-Sleep -m $step.Delay
+                    Clear-Variable -Name pixel
                 }
                 Start-Sleep -m $loopDelay
                 "Crafted: $($i+1)  Remaining: $($args[0]-($i+1))"
             }
+            $bitmap.Dispose()
             [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
         } -ArgumentList $craftNumeric.Value, $macros, $confirmKey, $medicineKey, $useMedicine.Checked, $foodbuffKey, $useFoodbuff.Checked, $craftingLog
     }
