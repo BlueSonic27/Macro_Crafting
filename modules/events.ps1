@@ -232,6 +232,7 @@ $skillsGrid.Add_CellMouseUp({
 $craftBtn.Add_click({
         if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
             Stop-Job -Name Craft
+            $main.Text = 'FFXIV Macro Crafter'
             $this.Text = 'Craft'
         }
         else {
