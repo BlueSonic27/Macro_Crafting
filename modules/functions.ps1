@@ -131,8 +131,13 @@ function craft {
                 [DllImport("user32.dll")] public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
                 [DllImport("user32.dll")] public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
                 [DllImport("user32.dll")] public static extern bool BlockInput(bool fBlockIt);
+                [DllImport("kernel32.dll", CharSet = CharSet.Auto,SetLastError = true)]
+                public static extern void SetThreadExecutionState(uint esFlags);
             }
 '@
+            $ES_CONTINUOUS = [uint32]"0x80000000"
+            $ES_DISPLAY_REQUIRED = [uint32]"0x00000002"
+            [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_DISPLAY_REQUIRED)
             [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
             $confirmDelay = 1500
             $loopDelay = 1800
@@ -215,6 +220,7 @@ function craft {
                 Start-Sleep -m $loopDelay
                 "Crafted: $($i+1)  Remaining: $($args[0]-($i+1))"
             }
+            [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
         } -ArgumentList $craftNumeric.Value, $macros, $confirmKey, $medicineKey, $useMedicine.Checked, $foodbuffKey, $useFoodbuff.Checked, $craftingLog
     }
     else {
