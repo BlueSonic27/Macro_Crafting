@@ -232,6 +232,8 @@ $skillsGrid.Add_CellMouseUp({
 $craftBtn.Add_click({
         if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
             Stop-Job -Name Craft
+            $ES_CONTINUOUS = [uint32]"0x80000000"
+            [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
             $main.Text = 'FFXIV Macro Crafter'
             $this.Text = 'Craft'
         }
@@ -269,6 +271,8 @@ $craftingGrid.Add_CellMouseUp({
         }
     })
 $main.Add_Closing({
+    $ES_CONTINUOUS = [uint32]"0x80000000"
+    [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
         if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
             Stop-Job -Name Craft
             [NativeMethods]::BlockInput(0)

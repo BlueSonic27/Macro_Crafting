@@ -6,8 +6,9 @@ Add-Type @'
 using System;
 using System.Runtime.InteropServices;
 public static class NativeMethods {
-    [DllImport("user32.dll")]
-    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto,SetLastError = true)]
+    public static extern void SetThreadExecutionState(uint esFlags);
 }
 '@
 [NativeMethods]::ShowWindowAsync((Get-Process -id $pid).MainWindowHandle, 2) | Out-Null
