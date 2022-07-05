@@ -132,34 +132,26 @@ function craft {
                 [DllImport("user32.dll")] public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
                 [DllImport("user32.dll")] public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
                 [DllImport("user32.dll")] public static extern bool BlockInput(bool fBlockIt);
-                [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
-                [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+                [DllImport("user32.dll")] public static extern IntPtr GetDC(IntPtr hwnd);
+                [DllImport("user32.dll", SetLastError = true)]
+                public static extern Int32 ReleaseDC(IntPtr hwnd, IntPtr hdc);
+                [DllImport("gdi32.dll", SetLastError = true)]
+                public static extern uint GetPixel(IntPtr dc, int x, int y);
                 [DllImport("kernel32.dll", CharSet = CharSet.Auto,SetLastError = true)]
                 public static extern void SetThreadExecutionState(uint esFlags);
             }
-            public struct RECT {
-                public int Left;
-                public int Top;
-                public int Right;
-                public int Bottom;
-            }
 '@
-            [int]$ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
             $ES_CONTINUOUS = [uint32]"0x80000000"
             $ES_DISPLAY_REQUIRED = [uint32]"0x00000002"
             [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_DISPLAY_REQUIRED)
+            $ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
+            $hdc = [NativeMethods]::GetDC($ffxivHandle)
             $confirmDelay = 1500
             $loopDelay = 1800
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 29)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 14)
             $craftingbuffs = ($args[6] -eq $true) -or ($args[4] -eq $true)
-            $Rectangle = New-Object RECT
-            [NativeMethods]::GetWindowRect($ffxivHandle, [ref]$Rectangle)
-            $Height = $Rectangle.Bottom - $Rectangle.Top
-            $Width = $Rectangle.Right - $Rectangle.Left
-            $bitmap = New-Object System.Drawing.Bitmap $Width, $Height
-            $graphic = [System.Drawing.Graphics]::FromImage($bitmap)
             $steps = $args[1].Count
             for ($i = 0; $i -lt $args[0]; $i++) {
                 $currenTime = Get-Date
@@ -217,12 +209,11 @@ function craft {
                 foreach ($step in $args[1]) {
                     $j += 1
                     $scancodes = ($step.Sendkeys).Split(',')
-                    $hdc = $graphic.GetHdc()
-                    [NativeMethods]::PrintWindow($ffxivHandle,$hdc, 0)
-                    $graphic.ReleaseHdc()
-                    $pixel = $bitmap.GetPixel(283, 281)
-                    $rgb = $pixel.R -eq 181 -and $pixel.G -eq 255 -and $pixel.B -eq 181
-                    if (($rgb -eq $false -and $j -lt $steps) -or ($rgb -eq $true -and $j -eq $steps)) {
+                    $collectable = [NativeMethods]::GetPixel($hdc, 283, 281)
+                    $normal = [NativeMethods]::GetPixel($hdc, 225, 317)
+                    #$condition = [NativeMethods]::GetPixel($hdc, 46, 326)
+                    $quality = ($normal -eq 5232008) -or ($collectable -eq 11927477)
+                    if (($quality -eq $false -and $j -lt $steps) -or ($quality -eq $true -and $j -eq $steps)) {
                         if ($scancodes.Length -gt 1) {
                             #Double key keybind
                             [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press keys
@@ -241,12 +232,11 @@ function craft {
                         }
                     }
                     Start-Sleep -m $step.Delay
-                    Clear-Variable -Name pixel
                 }
                 Start-Sleep -m $loopDelay
                 "Crafted: $($i+1)  Remaining: $($args[0]-($i+1))"
             }
-            $bitmap.Dispose()
+            [NativeMethods]::ReleaseDC($ffxivHandle, $hdc) | Out-Null
             [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
         } -ArgumentList $craftNumeric.Value, $macros, $confirmKey, $medicineKey, $useMedicine.Checked, $foodbuffKey, $useFoodbuff.Checked, $craftingLog
     }
