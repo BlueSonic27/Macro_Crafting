@@ -39,6 +39,7 @@ $scanCodesModifiers = @{
 $ignoreKeys = @(9,16,17,18,20,91,144,145)
 function scancodes($element) {
     if (!($ignoreKeys).Contains($element[2])) {
+        $scanCodes = @()
         $mods = ([string]$_.modifiers).Replace(', ', ' + ')
         if($converter.Contains($element[2])) {
             $key = $converter[$element[2]]
@@ -46,19 +47,26 @@ function scancodes($element) {
         else {
             $key = $element[1]
         }
-        $scanCodes = @()
         if ($mods -ne 'None') {
+            if([bool]$element[0].PSObject.Properties["Text"]) {
+            $element[0].Text = "$mods + $key"
+            }
+            else {
+                $element[0].Value = "$mods + $key"
+            }
             foreach ($mod in $mods.split(' + ')) {
                 $scanCodes += $scanCodesModifiers[$mod]
             }
         }
-        $scanCodes += '0x' + ('{0:x}' -f $element[2]).ToUpper()
-        if($mods -ne 'None') {
-            $element[0].Text = "$mods + $key"
-        }
         else {
-            $element[0].Text = $key
+            if([bool]$element[0].PSObject.Properties["Text"]) {
+                $element[0].Text = $key
+            }
+            else {
+                $element[0].Value = $key
+            }
         }
+        $scanCodes += '0x' + ('{0:x}' -f $element[2]).ToUpper()
         return $scanCodes -join ','
     }
 }

@@ -207,7 +207,7 @@ $skillsGrid.Add_KeyDown({
         $_.SuppressKeyPress = $true
     })
 $skillsGrid.Add_KeyUp({
-    $this.Tag = scancodes($this, $_.keyCode, $_.KeyValue)
+    $this.SelectedCells[9].Value = scancodes($this.SelectedCells[2], $_.keyCode, $_.KeyValue)
     })
 $skillsGrid.Add_CellValidating({
         if ($_.ColumnIndex -eq 1) { return }
