@@ -360,4 +360,17 @@
 		<Key>hastyTouch</Key>
 		<Scancode></Scancode>
 	</Skill>
+	<Skill>
+		<ID>30</ID>
+		<Name>Heart of Soul</Name>
+		<Keybind></Keybind>
+		<Level>86</Level>
+		<CP>0</CP>
+		<Description>Allows the execution of Precise Touch, Intensive Synthesis, or Tricks of the Trade regardless of material condition.
+Effect ends if the aforementioned actions are executed when material condition is not "Good" or "Excellent".</Description>
+		<Type>Step</Type>
+		<icon>icons\heartSoul.png</icon>
+		<Key>heartSoul</Key>
+		<Scancode></Scancode>
+	</Skill>
 </Skills>

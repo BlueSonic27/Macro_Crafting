@@ -359,6 +359,10 @@ $hastyTouch = New-Object System.Windows.Forms.Button
 $hastyTouch.Tag = 29
 $hastyTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\hastyTouch.png")
 
+$heartSoul = New-Object System.Windows.Forms.Button
+$heartSoul.Tag =  30
+$heartSoul.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\heartSoul.png")
+
 $progress = New-Object System.Windows.Forms.Panel
 $progress.Height = 41
 $progress.Dock = 1
@@ -373,7 +377,7 @@ $buff = New-Object System.Windows.Forms.Panel
 $buff.AutoSize = $true
 $buff.Height = 41
 $buff.Dock = 'Left'
-$buff.Controls.AddRange(@($finalAppraisal,$veneration,$innovation,$greatStrides,$wasteNot2,$wasteNot))
+$buff.Controls.AddRange(@($heartSoul,$finalAppraisal,$veneration,$innovation,$greatStrides,$wasteNot2,$wasteNot))
 
 $repair = New-Object System.Windows.Forms.Panel
 $repair.AutoSize = $true
