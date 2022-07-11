@@ -368,7 +368,7 @@
 		<CP>0</CP>
 		<Description>Allows the execution of Precise Touch, Intensive Synthesis, or Tricks of the Trade regardless of material condition.
 Effect ends if the aforementioned actions are executed when material condition is not "Good" or "Excellent".</Description>
-		<Type>Step</Type>
+		<Type>Buff</Type>
 		<icon>icons\heartSoul.png</icon>
 		<Key>heartSoul</Key>
 		<Scancode></Scancode>
