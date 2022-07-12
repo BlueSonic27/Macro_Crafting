@@ -196,7 +196,7 @@ function craft {
                 [NativeMethods]::BlockInput(1) | Out-Null
                 Start-Sleep -m 100
                 for($k = 1; $k -le 4; $k++) {
-                    $delay = (($k -ne 4) ? ($confirmDelay - 500) : $confirmDelay)
+                    if($k -ne 4) {$delay = $confirmDelay - 500} else {$delay = $confirmDelay}
                     keyPress($args[2]) # Press Confirm Key
                     Start-Sleep -m $delay
                 }
