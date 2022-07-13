@@ -72,17 +72,17 @@ function scancodes($element) {
 }
 function expand {
     if ($expandCollapse.Text -eq 'Collapse') {
-        $main.Height = 66
-        $main.Width = 140
-        $main.FormBorderStyle = 'None'
+        $syncHash.Window.Height = 66
+        $syncHash.Window.Width = 140
+        $syncHash.Window.FormBorderStyle = 'None'
         $expandCollapse.Text = 'Expand'
         $expandCollapsePanel.Left = -80
         $FormTabControl.Visible = $false
     }
     else {
-        $main.Height = 470
-        $main.Width = 570
-        $main.FormBorderStyle = 'Fixed3D'
+        $syncHash.Window.Height = 470
+        $syncHash.Window.Width = 570
+        $syncHash.Window.FormBorderStyle = 'Fixed3D'
         $expandCollapse.Text = 'Collapse'
         $expandCollapsePanel.Left = 370
         $FormTabControl.Visible = $true
@@ -128,111 +128,171 @@ function craft {
     $craftingLog = $craftLogTxT.Tag -join ''
     $ffxiv = Get-Process | Where-Object { $_.MainWindowTitle -like 'Final Fantasy XIV' }
     if ($ffxiv) {
-        expand
-        $timer.Enabled = $True
-        $main.Text = 'FFXIV Macro Crafter - Running'
-        Start-Job -Name Craft -ScriptBlock {
-            Add-Type -AssemblyName System.Windows.Forms
-            Add-Type @'
-            using System;
-            using System.Runtime.InteropServices;
-            public static class NativeMethods {
-                [DllImport("user32.dll")] public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
-                [DllImport("user32.dll")] public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
-                [DllImport("user32.dll")] public static extern bool BlockInput(bool fBlockIt);
-                [DllImport("user32.dll")] public static extern IntPtr GetDC(IntPtr hwnd);
-                [DllImport("user32.dll", SetLastError = true)]
-                public static extern Int32 ReleaseDC(IntPtr hwnd, IntPtr hdc);
-                [DllImport("gdi32.dll", SetLastError = true)]
-                public static extern uint GetPixel(IntPtr dc, int x, int y);
-                [DllImport("kernel32.dll", CharSet = CharSet.Auto,SetLastError = true)]
-                public static extern void SetThreadExecutionState(uint esFlags);
-            }
-'@
-        function keyPress() {
-            param(
-                [Parameter(Mandatory=$true)]
-                $key
-            )
-            [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $key, 0) | Out-Null # Key press down
-            Start-Sleep -m 50
-            [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $key, 0) | Out-Null # Key press release
-        }
+        $syncHash.Crafts = $craftNumeric.Value
+        $syncHash.Macros = $macros
+        $syncHash.ConfirmKey = $confirmKey
+        $syncHash.MedicineKey = $medicineKey
+        $syncHash.MedicineCheck = $useMedicine.Checked
+        $syncHash.FoodbuffKey = $foodbuffKey
+        $syncHash.FoodbuffCheck = $useFoodbuff.Checked
+        $syncHash.CraftingLog = $craftingLog
+        $syncHash.Window.Text = 'FFXIV Macro Crafter - Running'
+        $syncHash.FFXIVHandle = 0
+        $syncHash.HDC = 0
+        $NativeMethods = Add-Type -name user32 -passThru -MemberDefinition '
+        [DllImport("user32.dll")]
+        public static extern bool PostMessageA(int hWnd, int hMsg, int wParam, int lParam);
+        [DllImport("user32.dll")]
+        public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
+        [DllImport("user32.dll")]
+        public static extern bool BlockInput(bool fBlockIt);
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetDC(IntPtr hwnd);
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern Int32 ReleaseDC(IntPtr hwnd, IntPtr hdc);
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern uint GetPixel(IntPtr dc, int x, int y);
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto,SetLastError = true)]
+        public static extern void SetThreadExecutionState(uint esFlags);
+'
+        $AssemblyEntry = New-Object System.Management.Automation.Runspaces.SessionStateAssemblyEntry -ArgumentList System.Windows.Forms
+    
+        $initialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+        $initialSessionState.Assemblies.Add($AssemblyEntry)
+        $initialSessionState.ExecutionPolicy = 4
+    
+        $Runspace = [runspacefactory]::CreateRunspace()
+        $Runspace.ApartmentState = "STA"
+        $Runspace.ThreadOptions = "ReuseThread"
+        $Runspace.Open()
+        $Runspace.SessionStateProxy.SetVariable("NativeMethods",$NativeMethods)
+        $Runspace.SessionStateProxy.SetVariable("syncHash",$syncHash)
+    
+        $Powershell = [powershell]::Create($initialSessionState)
+        $Powershell.Runspace = $Runspace
+        
+        $Powershell.AddScript({        
             $ES_CONTINUOUS = [uint32]"0x80000000"
             $ES_DISPLAY_REQUIRED = [uint32]"0x00000002"
-            [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_DISPLAY_REQUIRED)
-            $ffxivHandle = [NativeMethods]::FindWindow(0, 'FINAL FANTASY XIV')
-            $hdc = [NativeMethods]::GetDC($ffxivHandle)
+            $NativeMethods::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_DISPLAY_REQUIRED)
+            $ffxivHandle = $NativeMethods::FindWindow(0, 'FINAL FANTASY XIV')
+            $hdc = $NativeMethods::GetDC($ffxivHandle)
+            $syncHash.FFXIVHandle = $ffxivHandle
+            $syncHash.HDC = $hdc
             $confirmDelay = 1500
             $loopDelay = 1800
             $currenTime = Get-Date
             $foodBuffTimestamp = $currenTime + (New-Timespan -Minutes 29)
             $medicineTimestamp = $currenTime + (New-Timespan -Minutes 14)
-            $craftingbuffs = ($args[6] -eq $true) -or ($args[4] -eq $true)
-            $steps = $args[1].Count
-            for ($i = 0; $i -lt $args[0]; $i++) {
+            $craftingbuffs = $syncHash.FoodbuffCheck -or $syncHash.MedicineCheck
+            $steps = $($syncHash.Macros).Count
+            $i = 0
+            while (($i -lt $syncHash.Crafts) -and !($syncHash.Stop -or $syncHash.Abort)) {
+                $syncHash.Window.Text = "FFXIV Macro Crafter - Running  Crafted: $($i)  Remaining: $($syncHash.Crafts-$i)"
+                do{
+                    Start-Sleep 1
+                } while($syncHash.Pause)
                 $currenTime = Get-Date
                 $buffTimestamps = ($currenTime -gt $foodBuffTimestamp) -or ($currenTime -gt $medicineTimestamp)
-                if ($craftingbuffs -eq $true -and ($i -eq 0 -or $buffTimestamps -eq $true)) {
-                    keyPress($args[7]) # Close crafting Log
+                if ($craftingbuffs -and ($i -eq 0 -or $buffTimestamps)) {
+                    if ($syncHash.Abort) {break} else {[void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $syncHash.CraftingLog, 0)}
+                    Start-Sleep -m 50
+                    [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $syncHash.CraftingLog, 0)
                     Start-Sleep 2
-                    if ($args[6] -eq $true) {
-                        keyPress($args[5]) # Use Foodbuff
+                    if ($syncHash.FoodbuffCheck) {
+                        if ($syncHash.Abort) {break} else {[void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $syncHash.FoodbuffKey, 0)} # Use Foodbuff
+                        Start-Sleep -m 50
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $syncHash.FoodbuffKey, 0)
                         $foodBuffTimestamp = (Get-Date) + (New-Timespan -Minutes 29)
                         Start-Sleep 4
                     }
-                    if ($args[4] -eq $true) {
-                        keyPress($args[3]) # Use Medicine
+                    if ($syncHash.MedicineCheck) {
+                        if ($syncHash.Abort) {break} else {[void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $syncHash.MedicineKey, 0)} # Use Medicine
+                        Start-Sleep -m 50
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $syncHash.MedicineKey, 0)
                         $medicineTimestamp = (Get-Date) + (New-Timespan -Minutes 14)
                         Start-Sleep 4
                     }
-                    keyPress($args[7]) # Open Crafting Log
+                    if ($syncHash.Abort) {break} else {[void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $syncHash.CraftingLog, 0)} # Open Crafting Log
+                    Start-Sleep -m 50
+                    [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $syncHash.CraftingLog, 0)
                     Start-Sleep 2
                 }
                 do{
                    $mouseButtons = [System.Windows.Forms.UserControl]::MouseButtons
                    Start-Sleep 1
                 } while ($mouseButtons -ne 'None')
-                [NativeMethods]::BlockInput(1) | Out-Null
+                $NativeMethods::BlockInput(1)
                 Start-Sleep -m 100
                 for($k = 1; $k -le 4; $k++) {
                     if($k -ne 4) {$delay = $confirmDelay - 500} else {$delay = $confirmDelay}
-                    keyPress($args[2]) # Press Confirm Key
+                    if ($syncHash.Abort) {break} else {[void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $syncHash.ConfirmKey, 0)} # Press Confirm Key
+                    Start-Sleep -m 50
+                    [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $syncHash.ConfirmKey, 0)
                     Start-Sleep -m $delay
                 }
-                [NativeMethods]::BlockInput(0) | Out-Null
+                $NativeMethods::BlockInput(0)
                 $j = 1
-                foreach ($step in $args[1]) {
+                foreach ($step in $syncHash.Macros) {
                     $scancodes = ($step.Sendkeys).Split(',')
-                    $collectable = [NativeMethods]::GetPixel($hdc, 283, 281)
-                    $normal = [NativeMethods]::GetPixel($hdc, 225, 317)
-                    #$condition = [NativeMethods]::GetPixel($hdc, 46, 326)
+                    $collectable = $NativeMethods::GetPixel($hdc, 283, 281)
+                    $normal = $NativeMethods::GetPixel($hdc, 225, 317)
+                    #$condition = $NativeMethods::GetPixel($hdc, 46, 326)
                     $quality = [bool](($normal -eq 5232008) -or ($collectable -eq 11927477))
-                    if (($quality -eq $false) -or ($quality -eq $true -and $j -eq $steps)) {
-                        if ($scancodes.Length -gt 1) {
-                            #Double key keybind
-                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0) | Out-Null #Press keys
-                            Start-Sleep -m 50
-                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0100, $scancodes[1], 0) | Out-Null 
-                            Start-Sleep -m 50
-                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[1], 0) | Out-Null #Release keys
-                            Start-Sleep -m 50
-                            [NativeMethods]::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) | Out-Null
-                        }
-                        else {
-                            #Single key keybind
-                            keyPress($scancodes[0])
-                        }
+                    if ($quality -and $j -lt $steps) {continue}
+                    if ($scancodes.Length -gt 1) {
+                        #Double key keybind
+                        if ($syncHash.Abort) {break} else {[void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0)} #Press keys
+                        Start-Sleep -m 50
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $scancodes[1], 0) 
+                        Start-Sleep -m 50
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $scancodes[1], 0) #Release keys
+                        Start-Sleep -m 50
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0)
+                    }
+                    else {
+                        #Single key keybind
+                        if ($syncHash.Abort) {break} else {[void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, $scancodes[0], 0)} # Key press down
+                        Start-Sleep -m 50
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, $scancodes[0], 0) # Key press release
+                    }
+                    if($syncHash.Pause) {
+                        do{
+                            Start-Sleep -m 250
+                        } while($syncHash.Pause)
+                    } else {
                         Start-Sleep -m $step.Delay
                     }
                     $j += 1
                 }
                 Start-Sleep -m $loopDelay
-                "Crafted: $($i+1)  Remaining: $($args[0]-($i+1))"
+                $i++
             }
-            [NativeMethods]::ReleaseDC($ffxivHandle, $hdc) | Out-Null
-            [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
-        } -ArgumentList $craftNumeric.Value, $macros, $confirmKey, $medicineKey, $useMedicine.Checked, $foodbuffKey, $useFoodbuff.Checked, $craftingLog
+            $NativeMethods::BlockInput(0)
+            $NativeMethods::ReleaseDC($ffxivHandle, $hdc)
+            $NativeMethods::SetThreadExecutionState($ES_CONTINUOUS)
+        })
+        
+        $BackgroundJob = $Powershell.BeginInvoke()
+        
+        #Wait for code to complete and keep UI responsive
+         do {
+            [System.Windows.Forms.Application]::DoEvents()
+            Start-Sleep -Milliseconds 1
+        } while (!$BackgroundJob.IsCompleted)
+        
+        $Result = $Powershell.EndInvoke($BackgroundJob)
+        
+        #Clean up
+        $syncHash.Stop = $false
+        $syncHash.Pause = $false
+        $syncHash.Abort = $false
+        $syncHash.Window.Text = 'FFXIV Macro Crafter'
+        $syncHash.CraftBtn.Text = 'Craft'
+        $syncHash.PauseBtn.Text = 'Pause'
+        $syncHash.PauseBtn.Enabled = $false
+        $Powershell.Dispose()
+        $Runspace.Close()
     }
     else {
         [System.Windows.MessageBox]::Show('Final Fantasy XIV Client cannot be found', 'Error', 'OK', 'Error')

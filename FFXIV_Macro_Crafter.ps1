@@ -16,6 +16,10 @@ public static class NativeMethods {
 '@
 $consolePtr = [NativeMethods]::GetConsoleWindow()
 [NativeMethods]::ShowWindow($consolePtr, 0) > $Null
+$syncHash = [hashtable]::Synchronized(@{})
+$syncHash.Stop = $false
+$syncHash.Pause = $false
+$syncHash.Abort = $false
 $ds = New-Object System.Data.Dataset
 $null = $ds.ReadXml("$PSScriptRoot\skills.xml")
 if(!(Test-Path -Path "$PSScriptRoot\keybinds.json" -PathType Leaf) -or !(Test-Path -Path "$PSScriptRoot\controls.json" -PathType Leaf)) {
@@ -26,5 +30,5 @@ if(!(Test-Path -Path "$PSScriptRoot\keybinds.json" -PathType Leaf) -or !(Test-Pa
 
 Get-ChildItem -Path "$PSScriptRoot\modules" | ForEach-Object {. $($_.FullName)}
 
-$main.ShowDialog((New-Object System.Windows.Forms.Form -Property @{TopMost = $true }))
-$main.Dispose()
+$syncHash.Window.ShowDialog((New-Object System.Windows.Forms.Form -Property @{TopMost = $true }))
+$syncHash.Window.Dispose()

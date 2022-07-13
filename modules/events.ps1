@@ -41,18 +41,33 @@ $classDropdown.Add_SelectionChangeCommitted({
             }
         }
     })
-$timer.Add_Tick({
-        if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
-            $jobOutput = Get-Job -Name Craft | Receive-Job -Keep | Select-Object -Last 1
-            $craftBtn.Text = 'Stop'
-            $main.Text = "FFXIV Macro Crafter - Running  $jobOutput"
+$syncHash.CraftBtn.Add_click({
+        if ($syncHash.CraftBtn.Text -eq 'Stop') {
+            $syncHash.Stop = $true
+            $syncHash.Window.Text = 'FFXIV Macro Crafter - Stopping'
+            $syncHash.CraftBtn.Text = 'Abort'
         }
-        else {
-            $main.Text = 'FFXIV Macro Crafter'
-            $craftBtn.Text = 'Craft'
-            $timer.Enabled = $false
-            if ($expandCollapse.Text -ne 'Collapse') { expand }
+        elseif ($syncHash.CraftBtn.Text -eq 'Abort') {
+            $syncHash.Abort = $true
+            $syncHash.Pause = $false
+            $syncHash.Window.Text = 'FFXIV Macro Crafter'
+            $syncHash.CraftBtn.Text = 'Craft'
+        } else {
+            $syncHash.CraftBtn.Text = 'Stop'
+            $syncHash.PauseBtn.Enabled = $true
+            craft
         }
+    })
+$syncHash.PauseBtn.Add_click({
+    if($syncHash.Pause){
+        $syncHash.PauseBtn.Text = 'Pause'
+        $syncHash.CraftBtn.Text = 'Stop'
+        $syncHash.Pause = $false
+    } else {
+        $syncHash.PauseBtn.Text = 'Resume'
+        $syncHash.CraftBtn.Text = 'Abort'
+        $syncHash.Pause = $true
+    }
     })
 $loadRecipeDropdown.Add_TextChanged({
         [string]$text = $this.Text
@@ -229,19 +244,6 @@ $skillsGrid.Add_CellMouseUp({
             $this.Rows[$args[1].RowIndex].Cells[2].Selected = $true
         }
     })
-$craftBtn.Add_click({
-        if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
-            Stop-Job -Name Craft
-            $ES_CONTINUOUS = [uint32]"0x80000000"
-            [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
-            $main.Text = 'FFXIV Macro Crafter'
-            $this.Text = 'Craft'
-        }
-        else {
-            craft
-            $this.Text = 'Stop'
-        }
-    })
 $craftingGrid.Add_CellMouseUp({
         if ($_.Button -eq 'Right') {
             $rowIndex = $_.RowIndex
@@ -270,15 +272,13 @@ $craftingGrid.Add_CellMouseUp({
             }
         }
     })
-$main.Add_Closing({
-    $ES_CONTINUOUS = [uint32]"0x80000000"
-    [NativeMethods]::SetThreadExecutionState($ES_CONTINUOUS)
-        if (Get-Job -state running | Where-Object { $_.Name -eq 'Craft' }) {
-            Stop-Job -Name Craft
-            [NativeMethods]::BlockInput(0)
-        }
+$syncHash.Window.Add_Closing({
+    [NativeMethods]::SetThreadExecutionState([uint32]"0x80000000")
+    [NativeMethods]::BlockInput(0)
+    [NativeMethods]::ReleaseDC($syncHash.FFXIVHandle, $syncHash.HDC)
+    $syncHash.Abort = $true
     })
-$main.Add_Load({
+$syncHash.Window.Add_Load({
         $tooltip1 = New-Object System.Windows.Forms.ToolTip
         $skillsGrid.AutoSizeColumnsMode = 'AllCells'
         $skillsGrid.ColumnHeadersHeightSizeMode = 1

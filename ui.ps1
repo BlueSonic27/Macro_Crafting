@@ -25,17 +25,15 @@ $importForm.MaximizeBox = $false
 $importForm.Controls.AddRange(@($importText,$panel1))
 
 $main = New-Object System.Windows.Forms.Form
-$main.Text ='FFXIV Macro Crafter'
-$main.FormBorderStyle  = 0
-$main.Height = 510
-$main.Width = 570
-$main.FormBorderStyle = 'Fixed3D'
-$main.StartPosition = 'CenterScreen'
-$main.Topmost = $true
-$main.MaximizeBox = $false
-
-$timer = New-Object System.Windows.Forms.Timer
-$timer.Interval = 1000
+$syncHash.Window = $main
+$syncHash.Window.Text ='FFXIV Macro Crafter'
+$syncHash.Window.FormBorderStyle  = 0
+$syncHash.Window.Height = 510
+$syncHash.Window.Width = 570
+$syncHash.Window.FormBorderStyle = 'Fixed3D'
+$syncHash.Window.StartPosition = 'CenterScreen'
+$syncHash.Window.Topmost = $true
+$syncHash.Window.MaximizeBox = $false
 
 $craftingTab = New-object System.Windows.Forms.Tabpage
 $craftingTab.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -436,11 +434,18 @@ $craftNumeric.Width = 70
 $craftBtn = New-Object System.Windows.Forms.Button
 $craftBtn.Text = 'Craft'
 $craftBtn.Dock = 'Right'
+$syncHash.CraftBtn = $craftBtn
+
+$pauseBtn = New-Object System.Windows.Forms.Button
+$pauseBtn.Text = 'Pause'
+$pauseBtn.Dock = 'Right'
+$pauseBtn.Enabled = $false
+$syncHash.PauseBtn = $pauseBtn
 
 $craftGroup2 = New-Object System.Windows.Forms.Panel
 $craftGroup2.Dock = 'Top'
 $craftGroup2.Height = 23
-$craftGroup2.Controls.AddRange(@($useFoodbuffLbl,$useFoodbuff,$useMedicineLbl,$useMedicine,$craftLbl,$craftNumeric,$craftBtn))
+$craftGroup2.Controls.AddRange(@($useFoodbuffLbl,$useFoodbuff,$useMedicineLbl,$useMedicine,$craftLbl,$craftNumeric,$syncHash.CraftBtn,$syncHash.PauseBtn))
 
 foreach($button in ($ds.Tables[0].Rows | Select-Object -ExpandProperty Key)){
     $(Get-Variable -Name $button -ValueOnly).Dock = 'Left'
@@ -451,4 +456,4 @@ foreach($button in ($ds.Tables[0].Rows | Select-Object -ExpandProperty Key)){
 
 $keybindsTab.Controls.AddRange(@($saveKeybindBtn,$loadKeybindBtn,$medicinePanel,$foodBuffPanel,$craftLogPanel,$confirmPanel,$skillsGrid))
 $craftingTab.Controls.AddRange(@($craftGroup2,$craftGroup,$craftingGrid))
-$main.Controls.AddRange(@($expandCollapsePanel,$FormTabControl))
+$syncHash.Window.Controls.AddRange(@($expandCollapsePanel,$FormTabControl))
