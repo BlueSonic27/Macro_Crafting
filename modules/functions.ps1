@@ -190,7 +190,8 @@ function craft {
             while (($i -lt $syncHash.Crafts) -and !($syncHash.Stop -or $syncHash.Abort)) {
                 $syncHash.Window.Text = "FFXIV Macro Crafter - Running  Crafted: $($i)  Remaining: $($syncHash.Crafts-$i)"
                 do{
-                    Start-Sleep 1
+                    if($syncHash.Abort){break}
+                    Start-Sleep  -m 250
                 } while($syncHash.Pause)
                 $currenTime = Get-Date
                 $buffTimestamps = ($currenTime -gt $foodBuffTimestamp) -or ($currenTime -gt $medicineTimestamp)
@@ -258,6 +259,7 @@ function craft {
                     }
                     if($syncHash.Pause) {
                         do{
+                            if($syncHash.Abort){break}
                             Start-Sleep -m 250
                         } while($syncHash.Pause)
                     } else {

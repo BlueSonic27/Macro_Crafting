@@ -43,30 +43,32 @@ $classDropdown.Add_SelectionChangeCommitted({
     })
 $syncHash.CraftBtn.Add_click({
         if ($syncHash.CraftBtn.Text -eq 'Stop') {
-            $syncHash.Stop = $true
+            $syncHash.PauseBtn.Enabled = $false
             $syncHash.Window.Text = 'FFXIV Macro Crafter - Stopping'
+            $syncHash.Stop = $true
             $syncHash.CraftBtn.Text = 'Abort'
         }
         elseif ($syncHash.CraftBtn.Text -eq 'Abort') {
-            $syncHash.Abort = $true
-            $syncHash.Pause = $false
+            $syncHash.PauseBtn.Enabled = $false
             $syncHash.Window.Text = 'FFXIV Macro Crafter'
+            $syncHash.Abort = $true
             $syncHash.CraftBtn.Text = 'Craft'
         } else {
-            $syncHash.CraftBtn.Text = 'Stop'
             $syncHash.PauseBtn.Enabled = $true
+            $syncHash.Window.Text = 'FFXIV Macro Crafter'
+            $syncHash.CraftBtn.Text = 'Stop'
             craft
         }
     })
 $syncHash.PauseBtn.Add_click({
     if($syncHash.Pause){
+        $syncHash.Pause = $false
         $syncHash.PauseBtn.Text = 'Pause'
         $syncHash.CraftBtn.Text = 'Stop'
-        $syncHash.Pause = $false
     } else {
+        $syncHash.Pause = $true
         $syncHash.PauseBtn.Text = 'Resume'
         $syncHash.CraftBtn.Text = 'Abort'
-        $syncHash.Pause = $true
     }
     })
 $loadRecipeDropdown.Add_TextChanged({
