@@ -1,7 +1,5 @@
 icons/desktop.ini
-controls.json
-keybinds.json
+*.json
 FFXIV_Macro_Crafter - Nice UI.ps1
 FFXIVmacro.code-workspace
-Rotations/*
 updateChecker.ps1
