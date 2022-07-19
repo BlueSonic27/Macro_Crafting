@@ -1,3 +1,8 @@
+$craftingJobs = @('Carpenter','Blacksmith','Armorer','Goldsmith','Leatherworker','Weaver','Alchemist','Culinarian')
+<#
+----------------------------------------------------------------
+                            Import Form
+#>
 $importText = New-Object System.Windows.Forms.TextBox
 $importText.Dock = 'Bottom'
 $importText.Height = 300
@@ -23,34 +28,247 @@ $importForm.StartPosition = 'CenterScreen'
 $importForm.Topmost = $true
 $importForm.MaximizeBox = $false
 $importForm.Controls.AddRange(@($importText,$panel1))
+<#                          Import Form
+----------------------------------------------------------------
+                            Main Form
+#>
 
-$main = New-Object System.Windows.Forms.Form
+$main = [System.Windows.Forms.Form] @{
+Text            = 'FFXIV Macro Crafter'
+Height          = 510
+Width           = 570
+FormBorderStyle = 'Fixed3D'
+StartPosition   = 'CenterScreen'
+Topmost         = $true
+MaximizeBox     = $false}
 $syncHash.Window = $main
-$syncHash.Window.Text ='FFXIV Macro Crafter'
-$syncHash.Window.FormBorderStyle  = 0
-$syncHash.Window.Height = 510
-$syncHash.Window.Width = 570
-$syncHash.Window.FormBorderStyle = 'Fixed3D'
-$syncHash.Window.StartPosition = 'CenterScreen'
-$syncHash.Window.Topmost = $true
-$syncHash.Window.MaximizeBox = $false
 
-$craftingTab = New-object System.Windows.Forms.Tabpage
-$craftingTab.DataBindings.DefaultDataSourceUpdateMode = 0
-$craftingTab.Name = 'Tab1'
-$craftingTab.Text = 'Crafting Macro'
-$craftingTab.Padding = New-Object System.Windows.Forms.Padding(10,00,10,0)
+                            <# Collapse/Expand #>
 
-$keybindsTab = New-object System.Windows.Forms.Tabpage
-$keybindsTab.DataBindings.DefaultDataSourceUpdateMode = 0
-$keybindsTab.Name = 'Tab2'
-$keybindsTab.Text = 'Keybinds'
-$keybindsTab.Padding = New-Object System.Windows.Forms.Padding(75,0,75,0)
+$expandCollapse = [System.Windows.Forms.Button] @{
+Text    = 'Collapse'
+Dock    = 'Right'
+Height  = 23
+Width   = 60}
 
-$FormTabControl = New-object System.Windows.Forms.TabControl
-$FormTabControl.DataBindings.DefaultDataSourceUpdateMode = 0
-$FormTabControl.Dock = 5
-$FormTabControl.Controls.AddRange(@($craftingTab,$keybindsTab))
+$clearRotation = [System.Windows.Forms.Button] @{
+Text    = 'Clear All'
+Dock    = 'Right'
+Height  = 23
+Width   = 60
+Visible = $false}
+
+                            <# Tabpages #>
+
+$craftingTab = [System.Windows.Forms.Tabpage] @{
+Text = 'Crafting'
+Padding = New-Object System.Windows.Forms.Padding(10,0,10,0)}
+
+$queueTab = [System.Windows.Forms.Tabpage] @{
+Text = 'Queue'
+Padding = New-Object System.Windows.Forms.Padding(10,0,10,0)}
+
+$keybindsTab = [System.Windows.Forms.Tabpage] @{
+Text = 'Keybinds'
+Padding = New-Object System.Windows.Forms.Padding(75,0,75,0)}
+
+$FormTabControl = [System.Windows.Forms.TabControl] @{Dock = 5}
+$FormTabControl.Controls.AddRange(@($craftingTab,$queueTab,$keybindsTab))
+
+<#                          Main Form
+---------------------------------------------------------------------------------------
+                            Queue Tab
+#>
+
+$recipeColumn = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+$recipeColumn.Name = 'Recipe'
+$recipeColumn.HeaderText = 'In-Game Recipe Name'
+$recipeColumn.Width = 240
+
+$rotationDataTable = New-Object System.Data.DataTable
+[void]$rotationDataTable.Columns.Add('Rotations')
+$(Get-ChildItem "$PSScriptRoot\Rotations\*.json").BaseName | % {
+    [void]$rotationDataTable.Rows.Add($_)
+}
+
+$materialsColumn = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+$materialsColumn.Name = 'Materials'
+$materialsColumn.HeaderText = 'Material(s)'
+$materialsColumn.MaxInputLength = 1
+$materialsColumn.Width = 65
+
+$rotationColumn = New-Object System.Windows.Forms.DataGridViewComboBoxColumn
+$rotationColumn.Name = 'Rotation'
+$rotationColumn.HeaderText = 'Rotation'
+$rotationColumn.DataSource = $rotationDataTable
+$rotationColumn.DisplayMember = 'Rotations'
+$rotationColumn.ValueMember = 'Rotations'
+$rotationColumn.Width = 95
+$rotationColumn.DropDownWidth = 160
+
+$jobDataTable = New-Object System.Data.DataTable
+[void]$jobDataTable.Columns.AddRange(@('ID','Crafter'))
+$gearsetJson = Get-Content "$PSScriptRoot\gearset.json" | ConvertFrom-Json
+0..($craftingJobs.Count-1) | % {
+    $crafter = $craftingJobs[$_]
+    $gearsetNumber = $gearsetJson | Where-Object{$_.Name -eq $crafter} | Select-Object -ExpandProperty Value
+    [void]$jobDataTable.Rows.Add(@($gearsetNumber,$crafter))
+}
+
+$jobColumn = New-Object System.Windows.Forms.DataGridViewComboBoxColumn
+$jobColumn.Name = 'Crafter'
+$jobColumn.HeaderText = 'Crafter'
+$jobColumn.DataSource = $jobDataTable
+$jobColumn.DisplayMember = 'Crafter'
+$jobColumn.ValueMember = 'ID'
+$jobColumn.Width = 70
+$jobColumn.DropDownWidth  = 90
+
+$craftsColumn = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+$craftsColumn.Name = 'Crafts'
+$craftsColumn.HeaderText = 'Craft(s)'
+$craftsColumn.MaxInputLength = 3
+$craftsColumn.Width = 49
+
+$queueGrid = New-Object System.Windows.Forms.DataGridView
+$queueGrid.Dock = 1
+$queueGrid.Height = 250
+$queueGrid.EditMode = 'EditOnEnter'
+[void]$queueGrid.Columns.AddRange($recipeColumn,$materialsColumn,$rotationColumn,$jobColumn,$craftsColumn)
+
+                                    <# Controls #>
+
+$useFoodbuffQueue = New-Object System.Windows.Forms.CheckBox
+$useFoodbuffQueue.AutoSize = $true
+$useFoodbuffQueue.Dock = 'Right'
+
+$useFoodbuffLblQueue = New-Object System.Windows.Forms.Label
+$useFoodbuffLblQueue.AutoSize = $true
+$useFoodbuffLblQueue.Text = 'Food Buff'
+$useFoodbuffLblQueue.Dock = 'Right'
+
+$useMedicineQueue = New-Object System.Windows.Forms.CheckBox
+$useMedicineQueue.AutoSize = $true
+$useMedicineQueue.Dock = 'Right'
+
+$useMedicineLblQueue = New-Object System.Windows.Forms.Label
+$useMedicineLblQueue.AutoSize = $true
+$useMedicineLblQueue.Text = 'Medicine'
+$useMedicineLblQueue.Dock = 'Right'
+
+$craftBtnQueue = New-Object System.Windows.Forms.Button
+$craftBtnQueue.Text = 'Craft'
+$craftBtnQueue.Dock = 'Right'
+$syncHash.CraftQueueBtn = $craftBtnQueue
+
+$pauseBtnQueue = New-Object System.Windows.Forms.Button
+$pauseBtnQueue.Text = 'Pause'
+$pauseBtnQueue.Dock = 'Right'
+$pauseBtnQueue.Enabled = $false
+$syncHash.PauseQueueBtn = $pauseBtnQueue
+
+$gearsetLabelDefault =  @{
+    Dock = 'Left'
+    Height = 40
+}
+
+$gearsetNumericDefault = @{
+    Dock = 'Right'
+    Width = 50
+    Minimum = 1
+    Maximum = 47
+    Tag = 'Numeric'
+}
+
+$gearsetPanelDefault = @{
+    Dock = 'Top'
+    Height = 24
+}
+
+$panelColumnDefault = @{
+    Dock = 'Left'
+    Width = 258
+}
+
+$carpenterLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$carpenterLbl.Text = 'Carpenter'
+$carpenterNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$carpenterNumeric.Name = 'Carpenter'
+$carpenterGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$carpenterGroup.Controls.AddRange(@($carpenterLbl,$carpenterNumeric))
+
+$blacksmithLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$blacksmithLbl.Text = 'Blacksmith'
+$blacksmithNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$blacksmithNumeric.Name = 'Blacksmith'
+$blacksmithGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$blacksmithGroup.Controls.AddRange(@($blacksmithLbl,$blacksmithNumeric))
+
+$armorerLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$armorerLbl.Text = 'Armorer'
+$armorerNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$armorerNumeric.Name = 'Armorer'
+$armorerGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$armorerGroup.Controls.AddRange(@($armorerLbl,$armorerNumeric))
+
+$goldsmithLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$goldsmithLbl.Text = 'Goldsmith'
+$goldsmithNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$goldsmithNumeric.Name = 'Goldsmith'
+$goldsmithGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$goldsmithGroup.Controls.AddRange(@($goldsmithLbl,$goldsmithNumeric))
+
+$leatherworkerLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$leatherworkerLbl.Text = 'Leatherworker'
+$leatherworkerNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$leatherworkerNumeric.Name= 'Leatherworker'
+$leatherworkerGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$leatherworkerGroup.Controls.AddRange(@($leatherworkerLbl,$leatherworkerNumeric))
+
+$weaverLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$weaverLbl.Text = 'Weaver'
+$weaverNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$weaverNumeric.Name = 'Weaver'
+$weaverGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$weaverGroup.Controls.AddRange(@($weaverLbl,$weaverNumeric))
+
+$alchemistLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$alchemistLbl.Text = 'Alchemist'
+$alchemistNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$alchemistNumeric.Name = 'Alchemist'
+$alchemistGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$alchemistGroup.Controls.AddRange(@($alchemistLbl,$alchemistNumeric))
+
+$culinarianLbl = New-Object System.Windows.Forms.Label -Property $gearsetLabelDefault
+$culinarianLbl.Text = 'Culinarian'
+$culinarianNumeric = New-Object System.Windows.Forms.NumericUpDown -Property $gearsetNumericDefault
+$culinarianNumeric.Name = 'Culinarian'
+$culinarianGroup = New-Object System.Windows.Forms.Panel -Property $gearsetPanelDefault
+$culinarianGroup.Controls.AddRange(@($culinarianLbl,$culinarianNumeric))
+
+$saveGearset = [System.Windows.Forms.Button] @{Text = 'Save';Dock = 'Right';MaximumSize = New-Object System.Drawing.Size(100,24)}
+$loadGearset = [System.Windows.Forms.Button] @{Text = 'Load';Dock = 'Left' ;MaximumSize = New-Object System.Drawing.Size(100,24)}
+
+                                <# Panels #>
+$gearsetPanel1 = New-Object System.Windows.Forms.Panel -Property $panelColumnDefault
+$gearsetPanel2 = New-Object System.Windows.Forms.Panel -Property $panelColumnDefault
+$gearsetPanel1.Controls.AddRange(@($loadGearset,$culinarianGroup,$weaverGroup,$goldsmithGroup,$blacksmithGroup))
+$gearsetPanel2.Controls.AddRange(@($saveGearset,$alchemistGroup,$leatherworkerGroup,$armorerGroup,$carpenterGroup))
+
+$queueGroup = New-Object System.Windows.Forms.Panel
+$queueGroup.Dock = 'Top'
+$queueGroup.Height = 23
+$queueGroup.Controls.AddRange(@($useFoodbuffLblQueue,$useFoodbuffQueue,$useMedicineLblQueue,$useMedicineQueue,$syncHash.CraftQueueBtn,$syncHash.PauseQueueBtn))
+
+$gearsetGroupBox = [System.Windows.Forms.GroupBox] @{Dock = 'Top';Height = 150;Text = 'Gearset Number'}
+$gearsetGroupBox.Controls.AddRange(@($gearsetPanel1,$gearsetPanel2))
+
+loadGearsets
+
+<#                              Queue Tab
+---------------------------------------------------------------------------------------
+                                Keybinds Tab
+#>
 
 $skillsGrid = New-Object System.Windows.Forms.DataGridView
 $skillsGrid.Dock = 'Top'
@@ -67,7 +285,7 @@ $loadKeybindBtn.Dock = 'Top'
 
 $confirmKeyLbl = New-Object System.Windows.Forms.Label
 $confirmKeyLbl.Width = 100
-$confirmKeyLbl.Text = 'Confirm Key'
+$confirmKeyLbl.Text = 'Confirm'
 $confirmKeyLbl.Dock = 'Left'
 
 $confirmKeyTxt = New-Object System.Windows.Forms.TextBox
@@ -77,7 +295,7 @@ $confirmKeyTxt.ReadOnly = $true
 
 $foodBuffLbl = New-Object System.Windows.Forms.Label
 $foodBuffLbl.Width = 100
-$foodBuffLbl.Text = 'Food Buff Key'
+$foodBuffLbl.Text = 'Food Buff'
 $foodBuffLbl.Dock = 'Left'
 
 $foodBuffTxt = New-Object System.Windows.Forms.TextBox
@@ -87,7 +305,7 @@ $foodBuffTxT.ReadOnly = $true
 
 $medicineLbl = New-Object System.Windows.Forms.Label
 $medicineLbl.Width = 100
-$medicineLbl.Text = 'Medicine Key'
+$medicineLbl.Text = 'Medicine'
 $medicineLbl.Dock = 'Left'
 
 $medicineTxt = New-Object System.Windows.Forms.TextBox
@@ -97,7 +315,7 @@ $medicineTxT.ReadOnly = $true
 
 $craftLogLbl = New-Object System.Windows.Forms.Label
 $craftLogLbl.Width = 100
-$craftLogLbl.Text = 'Crafting Log Key'
+$craftLogLbl.Text = 'Crafting Log'
 $craftLogLbl.Dock = 'Left'
 
 $craftLogTxt = New-Object System.Windows.Forms.TextBox
@@ -125,9 +343,13 @@ $craftLogPanel.Dock = 'Top'
 $craftLogPanel.Height = 24
 $craftLogPanel.Controls.AddRange(@($craftLogTxt,$craftLogLbl))
 
+<#                              Keybinds Tab
+-------------------------------------------------------------------------------------
+                                Crafting Tab
+#>
+
 $marcoColumn = New-Object System.Windows.Forms.DataGridViewComboBoxColumn
 $marcoColumn.Name = 'Macro'
-$marcoColumn.HeaderText = 'Name'
 $marcoColumn.DataSource = $ds.Tables[0]
 $marcoColumn.DisplayMember = 'Name'
 $marcoColumn.ValueMember = 'ID'
@@ -137,7 +359,9 @@ $craftingGrid = New-Object System.Windows.Forms.DataGridView
 $craftingGrid.Dock = 1
 $craftingGrid.Height = 200
 $craftingGrid.ReadOnly = $true
-$craftingGrid.Columns.Add($marcoColumn)
+[void]$craftingGrid.Columns.Add($marcoColumn)
+
+                                <# Recipe Controls #>
 
 $levelLbl = New-Object System.Windows.Forms.Label
 $levelLbl.Text = 'Level'
@@ -171,26 +395,6 @@ if(-not($null -eq $listRotations)){
     $loadRecipeDropdown.Items.AddRange($listRotations)
 }
 
-$expandCollapse = New-Object System.Windows.Forms.Button
-$expandCollapse.Text = 'Collapse'
-$expandCollapse.Dock = 'Right'
-$expandCollapse.Height = 23
-$expandCollapse.Width = 60
-
-$clearRotation = New-Object System.Windows.Forms.Button
-$clearRotation.Text = 'Clear All'
-$clearRotation.Dock = 'Right'
-$clearRotation.Height = 23
-$clearRotation.Width = 60
-$clearRotation.Visible = $false
-
-$expandCollapsePanel = New-Object System.Windows.Forms.Panel
-$expandCollapsePanel.Height = 23
-$expandCollapsePanel.Top = 0
-$expandCollapsePanel.Left = 350
-$expandCollapsePanel.Margin = 0
-$expandCollapsePanel.Controls.AddRange(@($clearRotation,$expandCollapse))
-
 $saveRecipeBtn = New-Object System.Windows.Forms.Button
 $saveRecipeBtn.Dock = 'Right'
 $saveRecipeBtn.Width = 50
@@ -206,10 +410,7 @@ $importMacros.Dock = 'Right'
 $importMacros.AutoSize = $true
 $importMacros.Text = 'Import Macro(s)'
 
-$levelPanel = New-Object System.Windows.Forms.Panel
-$levelPanel.Dock = 'Top'
-$levelPanel.Height = 23
-$levelPanel.Controls.AddRange(@($levelNumeric,$levelLbl,$classDropdown,$classLbl,$loadRecipeDropdown,$deleteRecipeBtn,$saveRecipeBtn,$importMacros))
+                                            <# Skill Buttons #>
 
 $basicSynth = New-Object System.Windows.Forms.Button
 $basicSynth.Tag = 0
@@ -307,15 +508,9 @@ $wasteNot2 = New-Object System.Windows.Forms.Button
 $wasteNot2.Tag = 23
 $wasteNot2.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\wasteNot2.png")
 
-$manipulationCheck = New-Object System.Windows.Forms.CheckBox
-$manipulationCheck.BackColor = [System.Drawing.Color]::FromName("Transparent")
-$manipulationCheck.Location = New-Object System.Drawing.Point(83,0)
-$manipulationCheck.AutoSize = $true
-
 $manipulation = New-Object System.Windows.Forms.Button
 $manipulation.Tag = 24
 $manipulation.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\manipulation.png")
-$manipulation.Enabled = $false
 
 $veneration = New-Object System.Windows.Forms.Button
 $veneration.Tag = 25
@@ -341,33 +536,15 @@ $heartSoul = New-Object System.Windows.Forms.Button
 $heartSoul.Tag =  30
 $heartSoul.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\heartSoul.png")
 
-$progress = New-Object System.Windows.Forms.Panel
-$progress.Height = 41
-$progress.Dock = 1
-$progress.Controls.AddRange(@($muscleMemory,$intensiveSynth,$focusedSynth,$groundwork,$rapidSynth,$prudentSynth,$carefulSynth,$basicSynth))
+foreach($button in ($ds.Tables[0].Rows | Select-Object -ExpandProperty Key)){
+    if(!$button){ continue }
+    $(Get-Variable -Name $button -ValueOnly).Dock = 'Left'
+    $(Get-Variable -Name $button -ValueOnly).FlatStyle = 'Flat'
+    $(Get-Variable -Name $button -ValueOnly).FlatAppearance.BorderSize = 0
+    $(Get-Variable -Name $button -ValueOnly).MaximumSize = New-Object System.Drawing.Size(43,41)
+}
 
-$quality = New-Object System.Windows.Forms.Panel
-$quality.Height = 41
-$quality.Dock = 1
-$quality.Controls.AddRange(@($reflect,$trainedEye,$trainedFinesse,$byregotsBlessing,$preparatoryTouch,$prudentTouch,$focusedTouch,$preciseTouch,$hastyTouch,$advancedTouch,$standardTouch,$basicTouch))
-
-$buff = New-Object System.Windows.Forms.Panel
-$buff.AutoSize = $true
-$buff.Height = 41
-$buff.Dock = 'Left'
-$buff.Controls.AddRange(@($heartSoul,$finalAppraisal,$veneration,$innovation,$greatStrides,$wasteNot2,$wasteNot))
-
-$repair = New-Object System.Windows.Forms.Panel
-$repair.AutoSize = $true
-$repair.Dock = 'Left'
-$repair.Height = 60
-$repair.Padding = New-Object System.Windows.Forms.Padding(10,0,10,0)
-$repair.Controls.AddRange(@($manipulationCheck,$manipulation,$mastersMind))
-
-$other = New-Object System.Windows.Forms.Panel
-$other.AutoSize = $true
-$other.Dock = 'Left'
-$other.Controls.AddRange(@($delicateSynth,$observe))
+                                            <# Skill Labels #>
 
 $progressLbl = New-Object System.Windows.Forms.Label
 $progressLbl.Text = 'Progression'
@@ -384,15 +561,7 @@ $otherLbl.Text = 'Buff/Repair/Other'
 $otherLbl.Dock = 1
 $otherLbl.Height = 17
 
-$craftOther = New-Object System.Windows.Forms.Panel
-$craftOther.Dock = 1
-$craftOther.Controls.AddRange(@($buff, $repair, $other))
-
-$craftGroup = New-Object System.Windows.Forms.Panel
-$craftGroup.Dock = 1
-$craftGroup.Height = 210
-$craftGroup.Padding = New-Object System.Windows.Forms.Padding(0,10,0,0)
-$craftGroup.Controls.AddRange(@($craftOther,$otherLbl,$quality,$qualityLbl,$progress,$progressLbl,$levelPanel))
+                                            <# Craft Controls #>
 
 $useFoodbuff = New-Object System.Windows.Forms.CheckBox
 $useFoodbuff.AutoSize = $true
@@ -418,18 +587,19 @@ $craftLog.Dock = 'Right'
 
 $craftLogLbl = New-Object System.Windows.Forms.Label
 $craftLogLbl.AutoSize = $true
-$craftLogLbl.Text = 'Crafting Log Key'
+$craftLogLbl.Text = 'Crafting Log'
 $craftLogLbl.Dock = 'Right'
 
 $craftLbl = New-Object System.Windows.Forms.Label
-$craftLbl.Text = 'Num of Craft(s)'
+$craftLbl.AutoSize = $true
+$craftLbl.Text = 'Craft(s)'
 $craftLbl.Dock = 'Right'
 
 $craftNumeric = New-Object System.Windows.Forms.NumericUpDown
 $craftNumeric.Dock = 'Right'
 $craftNumeric.Maximum = 999
 $craftNumeric.Minimum = 1
-$craftNumeric.Width = 70
+$craftNumeric.Width = 40
 
 $craftBtn = New-Object System.Windows.Forms.Button
 $craftBtn.Text = 'Craft'
@@ -442,18 +612,64 @@ $pauseBtn.Dock = 'Right'
 $pauseBtn.Enabled = $false
 $syncHash.PauseBtn = $pauseBtn
 
+<# Panels #>
+
+$expandCollapsePanel = New-Object System.Windows.Forms.Panel
+$expandCollapsePanel.Height = 22
+$expandCollapsePanel.Top = 0
+$expandCollapsePanel.Left = 350
+$expandCollapsePanel.Margin = 0
+$expandCollapsePanel.Controls.AddRange(@($clearRotation,$expandCollapse))
+
+$levelPanel = New-Object System.Windows.Forms.Panel
+$levelPanel.Dock = 'Top'
+$levelPanel.Height = 23
+$levelPanel.Controls.AddRange(@($levelNumeric,$levelLbl,$classDropdown,$classLbl,$loadRecipeDropdown,$deleteRecipeBtn,$saveRecipeBtn,$importMacros))
+
+$progress = New-Object System.Windows.Forms.Panel
+$progress.Height = 41
+$progress.Dock = 1
+$progress.Controls.AddRange(@($muscleMemory,$intensiveSynth,$focusedSynth,$groundwork,$rapidSynth,$prudentSynth,$carefulSynth,$basicSynth))
+
+$quality = New-Object System.Windows.Forms.Panel
+$quality.Height = 41
+$quality.Dock = 1
+$quality.Controls.AddRange(@($reflect,$trainedEye,$trainedFinesse,$byregotsBlessing,$preparatoryTouch,$prudentTouch,$focusedTouch,$preciseTouch,$hastyTouch,$advancedTouch,$standardTouch,$basicTouch))
+
+$buff = New-Object System.Windows.Forms.Panel
+$buff.AutoSize = $true
+$buff.Height = 41
+$buff.Dock = 'Left'
+$buff.Controls.AddRange(@($heartSoul,$finalAppraisal,$veneration,$innovation,$greatStrides,$wasteNot2,$wasteNot))
+
+$repair = New-Object System.Windows.Forms.Panel
+$repair.AutoSize = $true
+$repair.Dock = 'Left'
+$repair.Height = 60
+$repair.Padding = New-Object System.Windows.Forms.Padding(10,0,10,0)
+$repair.Controls.AddRange(@($manipulation,$mastersMind))
+
+$other = New-Object System.Windows.Forms.Panel
+$other.AutoSize = $true
+$other.Dock = 'Left'
+$other.Controls.AddRange(@($delicateSynth,$observe))
+
+$craftOther = New-Object System.Windows.Forms.Panel
+$craftOther.Dock = 1
+$craftOther.Controls.AddRange(@($buff, $repair, $other))
+
+$craftGroup = New-Object System.Windows.Forms.Panel
+$craftGroup.Dock = 1
+$craftGroup.Height = 210
+$craftGroup.Padding = New-Object System.Windows.Forms.Padding(0,10,0,0)
+$craftGroup.Controls.AddRange(@($craftOther,$otherLbl,$quality,$qualityLbl,$progress,$progressLbl,$levelPanel))
+
 $craftGroup2 = New-Object System.Windows.Forms.Panel
 $craftGroup2.Dock = 'Top'
 $craftGroup2.Height = 23
 $craftGroup2.Controls.AddRange(@($useFoodbuffLbl,$useFoodbuff,$useMedicineLbl,$useMedicine,$craftLbl,$craftNumeric,$syncHash.CraftBtn,$syncHash.PauseBtn))
 
-foreach($button in ($ds.Tables[0].Rows | Select-Object -ExpandProperty Key)){
-    $(Get-Variable -Name $button -ValueOnly).Dock = 'Left'
-    $(Get-Variable -Name $button -ValueOnly).FlatStyle = 'Flat'
-    $(Get-Variable -Name $button -ValueOnly).FlatAppearance.BorderSize = 0
-    $(Get-Variable -Name $button -ValueOnly).MaximumSize = New-Object System.Drawing.Size(43,41)
-}
-
+$queueTab.Controls.AddRange(@($gearsetGroupBox,$queueGroup,$queueGrid))
 $keybindsTab.Controls.AddRange(@($saveKeybindBtn,$loadKeybindBtn,$medicinePanel,$foodBuffPanel,$craftLogPanel,$confirmPanel,$skillsGrid))
 $craftingTab.Controls.AddRange(@($craftGroup2,$craftGroup,$craftingGrid))
 $syncHash.Window.Controls.AddRange(@($expandCollapsePanel,$FormTabControl))
