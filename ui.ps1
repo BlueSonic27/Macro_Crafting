@@ -263,8 +263,14 @@ $queueGroup.Controls.AddRange(@($useFoodbuffLblQueue,$useFoodbuffQueue,$useMedic
 $gearsetGroupBox = [System.Windows.Forms.GroupBox] @{Dock = 'Top';Height = 150;Text = 'Gearset Number'}
 $gearsetGroupBox.Controls.AddRange(@($gearsetPanel1,$gearsetPanel2))
 
-loadGearsets
-
+$json = Get-Content "$PSScriptRoot\gearset.json" | ConvertFrom-Json
+if($json){
+    $gearsetGroupBox.Controls.Controls.Controls | Where-Object{$_.Tag -eq 'Numeric'} | % {
+        $name = $_.Name
+        $value = $json | Where-Object{$_.Name -eq $name} | Select-Object -ExpandProperty Value
+        $_.Value = $value
+    }
+}
 <#                              Queue Tab
 ---------------------------------------------------------------------------------------
                                 Keybinds Tab
