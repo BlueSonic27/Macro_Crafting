@@ -25,6 +25,25 @@ $NativeMethods = Add-Type -name user32 -passThru -MemberDefinition '
 $consolePtr = $NativeMethods::GetConsoleWindow()
 [void]$NativeMethods::ShowWindow($consolePtr, 0)
 
+$pause = {
+    while($syncHash.Pause){
+        $syncHash.Window.Text = "FFXIV Macro Crafter - Paused"
+        Start-Sleep -m 250
+    }}
+$singleKeyPress = {
+    param(
+        $wParam1 = 0x100,
+        $wParam2 = 0x101,
+        [Parameter(Mandatory)]
+        $keybind,
+        $lParam1 = 1,
+        $lParam2 = 0xC0000001
+    )
+    [void]$NativeMethods::PostMessageA($ffxivHandle, $wParam1, $keybind, $lParam1)
+    Start-Sleep -m 50
+    [void]$NativeMethods::PostMessageA($ffxivHandle, $wParam2, $keybind, $lParam2)
+}
+
 $syncHash = [hashtable]::Synchronized(@{})
 $syncHash.Stop = $false
 $syncHash.Pause = $false
@@ -39,6 +58,8 @@ $Runspace.ApartmentState = "STA"
 $Runspace.ThreadOptions = "ReuseThread"
 $Runspace.Open()
 $Runspace.SessionStateProxy.SetVariable("NativeMethods",$NativeMethods)
+$Runspace.SessionStateProxy.SetVariable("singleKeyPress",$singleKeyPress)
+$Runspace.SessionStateProxy.SetVariable("pause",$pause)
 $Runspace.SessionStateProxy.SetVariable("syncHash",$syncHash)
 
 $Powershell = [powershell]::Create($initialSessionState)

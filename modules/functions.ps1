@@ -305,24 +305,6 @@ function craftQueue {
         $hdc = $syncHash.HDC
         $confirmDelay = 1500
         $loopDelay = 1800
-        $pause = {
-            while($syncHash.Pause){
-                $syncHash.Window.Text = "FFXIV Macro Crafter - Paused"
-                Start-Sleep -m 250
-            }}
-        $singleKeyPress = {
-            param(
-                $wParam1 = 0x100,
-                $wParam2 = 0x101,
-                [Parameter(Mandatory)]
-                $keybind,
-                $lParam1 = 1,
-                $lParam2 = 0xC0000001
-            )
-            [void]$NativeMethods::PostMessageA($ffxivHandle, $wParam1, $keybind, $lParam1)
-            Start-Sleep -m 50
-            [void]$NativeMethods::PostMessageA($ffxivHandle, $wParam2, $keybind, $lParam2)
-        }
         $pasteText = {
             param(
                 [Parameter(Mandatory)]
@@ -334,6 +316,39 @@ function craftQueue {
             & $singleKeyPress -keybind 0x56 -lParam1 0x80000001
             Start-Sleep -m 50
             [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, 0x11, 0xC0000001)
+        }
+        $selectRecipe = {
+            $syncHash.Start | % {
+                & $pause
+                $syncHash.Window.Text = "FFXIV Macro Crafter - Running"
+                $keybind = $_.Keybind
+                $delay = $_.Delay
+                switch ($keybind) {
+                    $syncHash.FoodBuffKey {
+                        if ($syncHash.FoodbuffCheck) {
+                            $script:foodBuffTimestamp = (Get-Date + (New-Timespan -Minutes 29))
+                        }
+                    }
+                    $syncHash.MedicineKey {
+                        if ($syncHash.MedicineCheck) {
+                            $script:medicineTimestamp = (Get-Date + (New-Timespan -Minutes 14))
+                        }
+                    }
+                    '0x0D' {
+                        Set-Clipboard -Value $syncHash.Queue[$q].Recipe
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, 0x11, 1)
+                        Start-Sleep -m 50
+                        & $singleKeyPress -keybind 0x56 -lParam1 0x80000001
+                        Start-Sleep -m 50
+                        [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, 0x11, 0xC0000001)
+                        Start-Sleep -m 250
+                    }
+                }
+                1..$_.Repeat | % {
+                    & $singleKeyPress -keybind $keybind
+                    Start-Sleep -m $delay
+                }
+            }
         }
         for($q = 0; $q -lt $syncHash.Queue.Count; $q++) {
             if($syncHash.Stop) {break}
@@ -347,39 +362,6 @@ function craftQueue {
             if($q -eq 0) {[System.Windows.MessageBox]::Show('Close all in-game Windows before pressing OK','Information','OK','Information')}
             $NativeMethods::BlockInput(1)
             Start-Sleep -m 100
-            $selectRecipe = {
-                $syncHash.Start | % {
-                    & $pause
-                    $syncHash.Window.Text = "FFXIV Macro Crafter - Running"
-                    $keybind = $_.Keybind
-                    $delay = $_.Delay
-                    switch ($keybind) {
-                        $syncHash.FoodBuffKey {
-                            if ($syncHash.FoodbuffCheck) {
-                                $script:foodBuffTimestamp = (Get-Date + (New-Timespan -Minutes 29))
-                            }
-                        }
-                        $syncHash.MedicineKey {
-                            if ($syncHash.MedicineCheck) {
-                                $script:medicineTimestamp = (Get-Date + (New-Timespan -Minutes 14))
-                            }
-                        }
-                        '0x0D' {
-                            Set-Clipboard -Value $syncHash.Queue[$q].Recipe
-                            [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0100, 0x11, 1)
-                            Start-Sleep -m 50
-                            & $singleKeyPress -keybind 0x56 -lParam1 0x80000001
-                            Start-Sleep -m 50
-                            [void]$NativeMethods::PostMessageA($ffxivHandle, 0x0101, 0x11, 0xC0000001)
-                            Start-Sleep -m 250
-                        }
-                    }
-                    1..$_.Repeat | % {
-                        & $singleKeyPress -keybind $keybind
-                        Start-Sleep -m $delay
-                    }
-                }
-            }
             #Change Crafter Job
             $gearsetNumbers = $gearsetGroupBox.Controls.Controls.Controls | Where-Object{$_.Tag -eq 'Numeric'} | Select-Object Value
             $duplicateGearsets = ($gearsetNumbers | Select-Object -ExpandProperty Value | Group-Object | ?{$_.Count -gt 1}).Values
@@ -470,7 +452,7 @@ function craftQueue {
     $syncHash.Stop = $false
     $syncHash.Pause = $false
     $syncHash.Window.Text = 'FFXIV Macro Crafter'
-    $syncHash.CraftBtn.Text = 'Craft'
-    $syncHash.PauseBtn.Text = 'Pause'
-    $syncHash.PauseBtn.Enabled = $false
+    $syncHash.CraftQueueBtn.Text = 'Craft'
+    $syncHash.PauseQueueBtn.Text = 'Pause'
+    $syncHash.PauseQueueBtn.Enabled = $false
 }
