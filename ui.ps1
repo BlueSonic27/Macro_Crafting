@@ -84,6 +84,7 @@ $recipeColumn = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
 $recipeColumn.Name = 'Recipe'
 $recipeColumn.HeaderText = 'In-Game Recipe Name'
 $recipeColumn.Width = 240
+$recipeColumn.SortMode = 0
 
 $rotationDataTable = New-Object System.Data.DataTable
 [void]$rotationDataTable.Columns.Add('Rotations')
@@ -137,24 +138,27 @@ $queueGrid.EditMode = 'EditOnEnter'
 [void]$queueGrid.Columns.AddRange($recipeColumn,$materialsColumn,$rotationColumn,$jobColumn,$craftsColumn)
 
                                     <# Controls #>
+$autosizeDockright = @{AutoSize = $true;Dock = 'Right'}
 
-$useFoodbuffQueue = New-Object System.Windows.Forms.CheckBox
-$useFoodbuffQueue.AutoSize = $true
-$useFoodbuffQueue.Dock = 'Right'
+$loadQueueBtn = New-Object System.Windows.Forms.Button -Property @{
+    Dock = 'Left'
+    Text = 'Load'
+}
 
-$useFoodbuffLblQueue = New-Object System.Windows.Forms.Label
-$useFoodbuffLblQueue.AutoSize = $true
+$saveQueueBtn = New-Object System.Windows.Forms.Button -Property @{
+    Dock = 'Left'
+    Text = 'Save'
+}
+
+$useFoodbuffQueue = New-Object System.Windows.Forms.CheckBox -Property $autosizeDockright
+
+$useFoodbuffLblQueue = New-Object System.Windows.Forms.Label -Property $autosizeDockright
 $useFoodbuffLblQueue.Text = 'Food Buff'
-$useFoodbuffLblQueue.Dock = 'Right'
 
-$useMedicineQueue = New-Object System.Windows.Forms.CheckBox
-$useMedicineQueue.AutoSize = $true
-$useMedicineQueue.Dock = 'Right'
+$useMedicineQueue = New-Object System.Windows.Forms.CheckBox -Property $autosizeDockright
 
-$useMedicineLblQueue = New-Object System.Windows.Forms.Label
-$useMedicineLblQueue.AutoSize = $true
+$useMedicineLblQueue = New-Object System.Windows.Forms.Label -Property $autosizeDockright
 $useMedicineLblQueue.Text = 'Medicine'
-$useMedicineLblQueue.Dock = 'Right'
 
 $craftBtnQueue = New-Object System.Windows.Forms.Button
 $craftBtnQueue.Text = 'Craft'
@@ -258,7 +262,7 @@ $gearsetPanel2.Controls.AddRange(@($saveGearset,$alchemistGroup,$leatherworkerGr
 $queueGroup = New-Object System.Windows.Forms.Panel
 $queueGroup.Dock = 'Top'
 $queueGroup.Height = 23
-$queueGroup.Controls.AddRange(@($useFoodbuffLblQueue,$useFoodbuffQueue,$useMedicineLblQueue,$useMedicineQueue,$syncHash.CraftQueueBtn,$syncHash.PauseQueueBtn))
+$queueGroup.Controls.AddRange(@($saveQueueBtn,$loadQueueBtn,$useFoodbuffLblQueue,$useFoodbuffQueue,$useMedicineLblQueue,$useMedicineQueue,$syncHash.CraftQueueBtn,$syncHash.PauseQueueBtn))
 
 $gearsetGroupBox = [System.Windows.Forms.GroupBox] @{Dock = 'Top';Height = 150;Text = 'Gearset Number'}
 $gearsetGroupBox.Controls.AddRange(@($gearsetPanel1,$gearsetPanel2))
@@ -393,23 +397,26 @@ $classDropdown.DropDownStyle = 'DropDownList'
 $classDropdown.Items.AddRange(@('ALC','ARM','BSM','CRP','CUL','GSM','LTW','WVR'))
 $classDropdown.SelectedItem = 'CUL'
 
-$loadRecipeDropdown = New-Object System.Windows.Forms.ComboBox
-$loadRecipeDropdown.Dock = 'Right'
-$loadRecipeDropdown.Height = 25
-$listRotations = $(Get-ChildItem "$PSScriptRoot\Rotations\*.json").BaseName
-if(-not($null -eq $listRotations)){
-    $loadRecipeDropdown.Items.AddRange($listRotations)
+if(!(Test-Path -Path ".\Rotations" -PathType Container)){
+    New-Item -Path ".\Rotations" -ItemType Directory | Out-Null
 }
+if(!(Test-Path -Path ".\Queues" -PathType Container)){
+    New-Item -Path ".\Queues" -ItemType Directory | Out-Null
+}
+$fileBrowserDefaults = @{Filter = 'Json File (*.json)|*.json'}
+
+$openFileBrowser = New-Object System.Windows.Forms.OpenFileDialog -Property $fileBrowserDefaults
+$saveFileBrowser = New-Object System.Windows.Forms.SaveFileDialog -Property $fileBrowserDefaults
 
 $saveRecipeBtn = New-Object System.Windows.Forms.Button
 $saveRecipeBtn.Dock = 'Right'
 $saveRecipeBtn.Width = 50
 $saveRecipeBtn.Text = 'Save'
 
-$deleteRecipeBtn = New-Object System.Windows.Forms.Button
-$deleteRecipeBtn.Dock = 'Right'
-$deleteRecipeBtn.Width = 50
-$deleteRecipeBtn.Text = 'Delete'
+$loadRecipeBtn = New-Object System.Windows.Forms.Button
+$loadRecipeBtn.Dock = 'Right'
+$loadRecipeBtn.Width = 50
+$loadRecipeBtn.Text = 'Load'
 
 $importMacros = New-Object System.Windows.Forms.Button
 $importMacros.Dock = 'Right'
@@ -630,7 +637,7 @@ $expandCollapsePanel.Controls.AddRange(@($clearRotation,$expandCollapse))
 $levelPanel = New-Object System.Windows.Forms.Panel
 $levelPanel.Dock = 'Top'
 $levelPanel.Height = 23
-$levelPanel.Controls.AddRange(@($levelNumeric,$levelLbl,$classDropdown,$classLbl,$loadRecipeDropdown,$deleteRecipeBtn,$saveRecipeBtn,$importMacros))
+$levelPanel.Controls.AddRange(@($levelNumeric,$levelLbl,$classDropdown,$classLbl,$loadRecipeBtn,$saveRecipeBtn,$importMacros))
 
 $progress = New-Object System.Windows.Forms.Panel
 $progress.Height = 41
