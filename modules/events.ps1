@@ -42,7 +42,45 @@ $classDropdown.Add_SelectionChangeCommitted({
         }
     }
 })
-$syncHash.CraftQueueBtn.Add_click({
+$saveQueueBtn.Add_Click({
+    $rows = $queueGrid.Rows | Select-Object -SkipLast 1
+    $queuelist = $rows | Select-Object @{
+        Label='Recipe'   ;Expression={$_.Cells[0].Value}
+        },@{
+        Label='Materials';Expression={$_.Cells[1].Value}
+        },@{
+        Label='Rotation' ;Expression={$_.Cells[2].Value}
+        },@{
+        Label='Crafter'  ;Expression={$_.Cells[3].Value}
+        },@{
+        Label='Crafts'   ;Expression={$_.Cells[4].Value}
+        }
+    $mod5 = ((($queueGrid.Rows | Select-Object -SkipLast 1).Cells | Select-Object -ExpandProperty Value).Count % 5) -ne 0
+    if($queueGrid.RowCount -eq 1 -or $mod5){return}
+    $saveFileBrowser.InitialDirectory = "$scriptDir\Queues"
+    [void]$saveFileBrowser.ShowDialog()
+    if(!$saveFileBrowser.Filename){return}
+    $queueList | ConvertTo-Json | Out-File -FilePath $saveFileBrowser.Filename -NoNewline
+})
+$loadQueueBtn.Add_Click({
+    $openFileBrowser.InitialDirectory = "$scriptDir\Queues"
+    [void]$openFileBrowser.ShowDialog()
+    if(!$openFileBrowser.Filename){return}
+    $queue = Get-Content $openFileBrowser.Filename | ConvertFrom-Json
+    $queueGrid.Rows.Clear()
+    $clearRotation.Visible = $true
+    for ($i = 0; $i -lt $queue.Length; $i++) {
+        $lastRow = $queueGrid.NewRowIndex
+        $column = $queue[$i]
+        $queueGrid.Rows.Add()
+        $queueGrid.Rows[$lastRow].Cells[0].Value = $column.Recipe
+        $queueGrid.Rows[$lastRow].Cells[1].Value = $column.Materials
+        $queueGrid.Rows[$lastRow].Cells[2].Value = $column.Rotation
+        $queueGrid.Rows[$lastRow].Cells[3].Value = $column.Crafter
+        $queueGrid.Rows[$lastRow].Cells[4].Value = $column.Crafts
+    }
+})
+$syncHash.CraftQueueBtn.Add_Click({
     if($queueGrid.RowCount -eq 1){return}
     switch($syncHash.CraftQueueBtn.Text){
         'Stop' {
@@ -149,24 +187,27 @@ $syncHash.PauseBtn.Add_click({
         $syncHash.CraftBtn.Text = 'Abort'
     }
 })
-$loadRecipeDropdown.Add_TextChanged({
-    [string]$text = $this.Text
-    $escape = '[<>:"\\/|?*]'
-    if ($text -match $escape) {
-        $this.Text = $text.Substring(0, $text.Length - 1)
-        $errorText = @'
-A Filename can't contain any of the following characters:
-        <>:"/\|?*
-'@
-        [System.Windows.MessageBox]::Show($errorText, 'Error', 'OK', 'Error')
+$clearRotation.Add_Click({
+    switch($FormTabControl.SelectedTab.Text){
+        'Crafting' {
+            $craftingGrid.Rows.Clear()
+            $reflect.Enabled = $true
+            $trainedEye.Enabled = $true
+            $muscleMemory.Enabled = $true
+        }
+        'Queue' {
+            $queueGrid.Rows.Clear()
+        }
     }
+    $clearRotation.Visible = $false
 })
-$loadRecipeDropdown.Add_SelectionChangeCommitted({
-    $filename = $args[0].SelectedItem
-    $rotation = Get-Content "$PSScriptRoot\..\Rotations\$filename.json" | ConvertFrom-Json
+$loadRecipeBtn.Add_Click({
+    $openFileBrowser.InitialDirectory = "$PSScriptRoot\..\Rotations"
+    [void]$openFileBrowser.ShowDialog()
+    if(!$openFileBrowser.Filename){return}
+    $rotation = Get-Content $openFileBrowser.Filename | ConvertFrom-Json
     $craftingGrid.Rows.Clear()
     $clearRotation.Visible = $true
-    $queueBtn.Visible = $true
     for ($i = 0; $i -lt $rotation.Length; $i++) {
         $lastRow = $craftingGrid.NewRowIndex
         $step = [string]$rotation[$i]
@@ -179,55 +220,13 @@ $loadRecipeDropdown.Add_SelectionChangeCommitted({
         $muscleMemory.Enabled = $false
     }
 })
-$clearRotation.Add_Click({
-    $craftingGrid.Rows.Clear()
-    $clearRotation.Visible = $false
-    $reflect.Enabled = $true
-    $trainedEye.Enabled = $true
-    $muscleMemory.Enabled = $true
-})
 $saveRecipeBtn.Add_Click({
-    if ($null -eq $loadRecipeDropdown.SelectedItem) {
-        $filename = $loadRecipeDropdown.Text
-    }
-    else {
-        $filename = $loadRecipeDropdown.SelectedItem
-    }
-    $rotation = @()
-    foreach ($row in $craftingGrid.Rows) {
-        $cell = $row.Cells[0].Value
-        if ($cell -ne $null) { $rotation += $cell }
-    }
-    if ($null -eq $filename -or $filename -eq '') {
-        [System.Windows.MessageBox]::Show('Please enter a filename', 'Error', 'OK', 'Error')
-    }
-    else {
-        New-Item -Path "$PSScriptRoot\..\Rotations" -ItemType Directory -Force
-        ConvertTo-Json -InputObject $rotation -Compress | Out-File -FilePath "$PSScriptRoot\..\Rotations\$filename.json" -NoNewline
-        $loadRecipeDropdown.Items.Clear()
-        $loadRecipeDropdown.Items.AddRange((Get-ChildItem "$PSScriptRoot\..\Rotations\*.json").BaseName)
-        [System.Windows.MessageBox]::Show('Rotation saved', 'Information', 'OK', 'Information')
-    }
-})
-$deleteRecipeBtn.Add_Click({
-    if ($loadRecipeDropdown.SelectedItem) {
-        $filename = $loadRecipeDropdown.SelectedItem
-    }
-    else {
-        $filename = $false
-    }
-    if ($filename) {
-        if ([System.Windows.MessageBox]::Show(@"
-Are you sure you want to delete this rotation?
-
-        [ $filename ]
-"@, 'Warning', 'YesNo', 'Warning') -eq 'Yes') {
-            Remove-Item "$PSScriptRoot\..\Rotations\$filename.json"
-            $loadRecipeDropdown.Items.Clear()
-            $loadRecipeDropdown.Text = ''
-            $loadRecipeDropdown.Items.AddRange((Get-ChildItem "$PSScriptRoot\..\Rotations\*.json").BaseName)
-        }
-    }
+    if($craftingGrid.RowCount -eq 1){return}
+    $saveFileBrowser.InitialDirectory = "$PSScriptRoot\..\Rotations"
+    [void]$saveFileBrowser.ShowDialog()
+    if(!$saveFileBrowser.Filename){return}
+    $rotation = $craftingGrid.Rows.Cells | Select-Object -SkipLast 1 -ExpandProperty Value | ConvertTo-Json -Compress
+    $rotation | Out-File -FilePath $saveFileBrowser.Filename -NoNewline
 })
 $confirmKeyTxt.Add_KeyUp({
     $this.Tag = scancodes($this, $_.keyCode, $_.KeyValue)
@@ -293,6 +292,7 @@ $checkNumeric = {
     }
 }
 $queueGrid.Add_EditingControlShowing({
+    $clearRotation.Visible = $true
     $col = $queueGrid.CurrentCell.OwningColumn.Name
     $_.Control.Remove_KeyDown($checkNumeric)
     if(($col -eq 'Crafts') -or ($col -eq 'Materials')) {

@@ -1,5 +1,5 @@
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs;exit }
-
+$scriptDir = $PSScriptRoot
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing, PresentationFramework
 [System.Windows.Forms.Application]::EnableVisualStyles()
 $NativeMethods = Add-Type -name user32 -passThru -MemberDefinition '
@@ -48,7 +48,7 @@ $syncHash = [hashtable]::Synchronized(@{})
 $syncHash.Stop = $false
 $syncHash.Pause = $false
 $AssemblyEntry = New-Object System.Management.Automation.Runspaces.SessionStateAssemblyEntry -ArgumentList System.Windows.Forms
-    
+
 $initialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
 $initialSessionState.Assemblies.Add($AssemblyEntry)
 $initialSessionState.ExecutionPolicy = 4
