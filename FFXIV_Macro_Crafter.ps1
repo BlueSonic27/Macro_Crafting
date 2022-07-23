@@ -30,19 +30,6 @@ $pause = {
         $syncHash.Window.Text = "FFXIV Macro Crafter - Paused"
         Start-Sleep -m 250
     }}
-$singleKeyPress = {
-    param(
-        $wParam1 = 0x100,
-        $wParam2 = 0x101,
-        [Parameter(Mandatory)]
-        $keybind,
-        $lParam1 = 1,
-        $lParam2 = 0xC0000001
-    )
-    [void]$NativeMethods::PostMessageA($ffxivHandle, $wParam1, $keybind, $lParam1)
-    Start-Sleep -m 50
-    [void]$NativeMethods::PostMessageA($ffxivHandle, $wParam2, $keybind, $lParam2)
-}
 
 $syncHash = [hashtable]::Synchronized(@{})
 $syncHash.Stop = $false
@@ -58,7 +45,6 @@ $Runspace.ApartmentState = "STA"
 $Runspace.ThreadOptions = "ReuseThread"
 $Runspace.Open()
 $Runspace.SessionStateProxy.SetVariable("NativeMethods",$NativeMethods)
-$Runspace.SessionStateProxy.SetVariable("singleKeyPress",$singleKeyPress)
 $Runspace.SessionStateProxy.SetVariable("pause",$pause)
 $Runspace.SessionStateProxy.SetVariable("syncHash",$syncHash)
 
@@ -66,14 +52,15 @@ $Powershell = [powershell]::Create($initialSessionState)
 $Powershell.Runspace = $Runspace
 
 $ds = New-Object System.Data.Dataset
-$null = $ds.ReadXml("$PSScriptRoot\skills.xml")
-if(!(Test-Path -Path "$PSScriptRoot\keybinds.json" -PathType Leaf) -or !(Test-Path -Path "$PSScriptRoot\controls.json" -PathType Leaf)) {
+$null = $ds.ReadXml("$scriptDir\skills.xml")
+if(!(Test-Path -Path "$scriptDir\keybinds.json" -PathType Leaf) -or !(Test-Path -Path "$scriptDir\controls.json" -PathType Leaf)) {
     [System.Windows.MessageBox]::Show('Please configure your keybinds before using this tool','Information','OK','Information')
 }
 
-. "$PSScriptRoot\ui.ps1"
+. "$scriptDir\ui.ps1"
 
-Get-ChildItem -Path "$PSScriptRoot\modules" | ForEach-Object {. $($_.FullName)}
+Get-ChildItem -Path "$scriptDir\modules" | ForEach-Object {. $($_.FullName)}
 
 $syncHash.Window.ShowDialog((New-Object System.Windows.Forms.Form -Property @{TopMost = $true }))
+
 $syncHash.Window.Dispose()

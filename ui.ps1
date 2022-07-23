@@ -1,4 +1,3 @@
-$craftingJobs = @('Carpenter','Blacksmith','Armorer','Goldsmith','Leatherworker','Weaver','Alchemist','Culinarian')
 <#
 ----------------------------------------------------------------
                             Import Form
@@ -107,21 +106,10 @@ $rotationColumn.ValueMember = 'Rotations'
 $rotationColumn.Width = 95
 $rotationColumn.DropDownWidth = 160
 
-$jobDataTable = New-Object System.Data.DataTable
-[void]$jobDataTable.Columns.AddRange(@('ID','Crafter'))
-$gearsetJson = Get-Content "$PSScriptRoot\gearset.json" | ConvertFrom-Json
-0..($craftingJobs.Count-1) | % {
-    $crafter = $craftingJobs[$_]
-    $gearsetNumber = $gearsetJson | Where-Object{$_.Name -eq $crafter} | Select-Object -ExpandProperty Value
-    [void]$jobDataTable.Rows.Add(@($gearsetNumber,$crafter))
-}
-
 $jobColumn = New-Object System.Windows.Forms.DataGridViewComboBoxColumn
 $jobColumn.Name = 'Crafter'
 $jobColumn.HeaderText = 'Crafter'
-$jobColumn.DataSource = $jobDataTable
-$jobColumn.DisplayMember = 'Crafter'
-$jobColumn.ValueMember = 'ID'
+$jobColumn.DataSource =  @('Carpenter','Blacksmith','Armorer','Goldsmith','Leatherworker','Weaver','Alchemist','Culinarian')
 $jobColumn.Width = 70
 $jobColumn.DropDownWidth  = 90
 
@@ -150,15 +138,14 @@ $saveQueueBtn = New-Object System.Windows.Forms.Button -Property @{
     Text = 'Save'
 }
 
-$useFoodbuffQueue = New-Object System.Windows.Forms.CheckBox -Property $autosizeDockright
+$useHQMaterials = New-Object System.Windows.Forms.CheckBox -Property $autosizeDockright
+$useHQMaterials.Text = 'HQ Mat(s)'
 
-$useFoodbuffLblQueue = New-Object System.Windows.Forms.Label -Property $autosizeDockright
-$useFoodbuffLblQueue.Text = 'Food Buff'
+$useFoodbuffQueue = New-Object System.Windows.Forms.CheckBox -Property $autosizeDockright
+$useFoodbuffQueue.Text = 'Food'
 
 $useMedicineQueue = New-Object System.Windows.Forms.CheckBox -Property $autosizeDockright
-
-$useMedicineLblQueue = New-Object System.Windows.Forms.Label -Property $autosizeDockright
-$useMedicineLblQueue.Text = 'Medicine'
+$useMedicineQueue.Text = 'Medicine'
 
 $craftBtnQueue = New-Object System.Windows.Forms.Button
 $craftBtnQueue.Text = 'Craft'
@@ -262,12 +249,12 @@ $gearsetPanel2.Controls.AddRange(@($saveGearset,$alchemistGroup,$leatherworkerGr
 $queueGroup = New-Object System.Windows.Forms.Panel
 $queueGroup.Dock = 'Top'
 $queueGroup.Height = 23
-$queueGroup.Controls.AddRange(@($saveQueueBtn,$loadQueueBtn,$useFoodbuffLblQueue,$useFoodbuffQueue,$useMedicineLblQueue,$useMedicineQueue,$syncHash.CraftQueueBtn,$syncHash.PauseQueueBtn))
+$queueGroup.Controls.AddRange(@($saveQueueBtn,$loadQueueBtn,$useHQMaterials,$useFoodbuffQueue,$useMedicineQueue,$syncHash.CraftQueueBtn,$syncHash.PauseQueueBtn))
 
 $gearsetGroupBox = [System.Windows.Forms.GroupBox] @{Dock = 'Top';Height = 150;Text = 'Gearset Number'}
 $gearsetGroupBox.Controls.AddRange(@($gearsetPanel1,$gearsetPanel2))
 
-$json = Get-Content "$PSScriptRoot\gearset.json" | ConvertFrom-Json
+$json = Get-Content "$scriptDir\gearset.json" | ConvertFrom-Json
 if($json){
     $gearsetGroupBox.Controls.Controls.Controls | Where-Object{$_.Tag -eq 'Numeric'} | % {
         $name = $_.Name
@@ -427,127 +414,127 @@ $importMacros.Text = 'Import Macro(s)'
 
 $basicSynth = New-Object System.Windows.Forms.Button
 $basicSynth.Tag = 0
-$basicSynth.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\basicSynth.png")
+$basicSynth.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\basicSynth.png")
 
 $rapidSynth = New-Object System.Windows.Forms.Button
 $rapidSynth.Tag = 1
-$rapidSynth.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\rapidSynth.png")
+$rapidSynth.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\rapidSynth.png")
 
 $muscleMemory = New-Object System.Windows.Forms.Button
 $muscleMemory.Tag = 2
-$muscleMemory.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\muscleMemory.png")
+$muscleMemory.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\muscleMemory.png")
 
 $carefulSynth = New-Object System.Windows.Forms.Button
 $carefulSynth.Tag = 3
-$carefulSynth.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\carefulSynth.png")
+$carefulSynth.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\carefulSynth.png")
 
 $focusedSynth = New-Object System.Windows.Forms.Button
 $focusedSynth.Tag = 4
-$focusedSynth.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\focusedSynth.png")
+$focusedSynth.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\focusedSynth.png")
 
 $groundwork = New-Object System.Windows.Forms.Button
 $groundwork.Tag = 5
-$groundwork.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\groundwork.png")
+$groundwork.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\groundwork.png")
 
 $delicateSynth = New-Object System.Windows.Forms.Button
 $delicateSynth.Tag = 6
-$delicateSynth.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\delicateSynth.png")
+$delicateSynth.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\delicateSynth.png")
 
 $observe = New-Object System.Windows.Forms.Button
 $observe.Tag = 7
-$observe.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\observe.png")
+$observe.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\observe.png")
 
 $intensiveSynth = New-Object System.Windows.Forms.Button
 $intensiveSynth.Tag = 8
-$intensiveSynth.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\intensiveSynth.png")
+$intensiveSynth.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\intensiveSynth.png")
 
 $prudentSynth = New-Object System.Windows.Forms.Button
 $prudentSynth.Tag = 9
-$prudentSynth.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\prudentSynth.png")
+$prudentSynth.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\prudentSynth.png")
 
 $basicTouch = New-Object System.Windows.Forms.Button
 $basicTouch.Tag = 10
-$basicTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\basicTouch.png")
+$basicTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\basicTouch.png")
 
 $standardTouch = New-Object System.Windows.Forms.Button
 $standardTouch.Tag = 11
-$standardTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\standardTouch.png")
+$standardTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\standardTouch.png")
 
 $byregotsBlessing = New-Object System.Windows.Forms.Button
 $byregotsBlessing.Tag = 12
-$byregotsBlessing.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\byregotsBlessing.png")
+$byregotsBlessing.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\byregotsBlessing.png")
 
 $preciseTouch = New-Object System.Windows.Forms.Button
 $preciseTouch.Tag = 13
-$preciseTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\preciseTouch.png")
+$preciseTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\preciseTouch.png")
 
 $prudentTouch = New-Object System.Windows.Forms.Button
 $prudentTouch.Tag = 14
-$prudentTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\prudentTouch.png")
+$prudentTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\prudentTouch.png")
 
 $focusedTouch = New-Object System.Windows.Forms.Button
 $focusedTouch.Tag  = 15
-$focusedTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\focusedTouch.png")
+$focusedTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\focusedTouch.png")
 
 $reflect = New-Object System.Windows.Forms.Button
 $reflect.Tag = 16
-$reflect.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\reflect.png")
+$reflect.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\reflect.png")
 
 $preparatoryTouch = New-Object System.Windows.Forms.Button
 $preparatoryTouch.Tag = 17
-$preparatoryTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\preparatoryTouch.png")
+$preparatoryTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\preparatoryTouch.png")
 
 $trainedEye = New-Object System.Windows.Forms.Button
 $trainedEye.Tag = 18
-$trainedEye.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\trainedEye.png")
+$trainedEye.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\trainedEye.png")
 
 $advancedTouch = New-Object System.Windows.Forms.Button
 $advancedTouch.Tag = 19
-$advancedTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\CUL\advancedTouch.png")
+$advancedTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\CUL\advancedTouch.png")
 
 $trainedFinesse = New-Object System.Windows.Forms.Button
 $trainedFinesse.Tag = 20
-$trainedFinesse.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\trainedFinesse.png")
+$trainedFinesse.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\trainedFinesse.png")
 
 $mastersMind = New-Object System.Windows.Forms.Button
 $mastersMind.Tag = 21
-$mastersMind.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\mastersMind.png")
+$mastersMind.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\mastersMind.png")
 
 $wasteNot = New-Object System.Windows.Forms.Button
 $wasteNot.Tag = 22
-$wasteNot.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\wasteNot.png")
+$wasteNot.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\wasteNot.png")
 
 $wasteNot2 = New-Object System.Windows.Forms.Button
 $wasteNot2.Tag = 23
-$wasteNot2.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\wasteNot2.png")
+$wasteNot2.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\wasteNot2.png")
 
 $manipulation = New-Object System.Windows.Forms.Button
 $manipulation.Tag = 24
-$manipulation.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\manipulation.png")
+$manipulation.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\manipulation.png")
 
 $veneration = New-Object System.Windows.Forms.Button
 $veneration.Tag = 25
-$veneration.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\veneration.png")
+$veneration.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\veneration.png")
 
 $greatStrides = New-Object System.Windows.Forms.Button
 $greatStrides.Tag = 26
-$greatStrides.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\greatStrides.png")
+$greatStrides.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\greatStrides.png")
 
 $innovation = New-Object System.Windows.Forms.Button
 $innovation.Tag = 27
-$innovation.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\innovation.png")
+$innovation.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\innovation.png")
 
 $finalAppraisal = New-Object System.Windows.Forms.Button
 $finalAppraisal.Tag = 28
-$finalAppraisal.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\finalAppraisal.png")
+$finalAppraisal.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\finalAppraisal.png")
 
 $hastyTouch = New-Object System.Windows.Forms.Button
 $hastyTouch.Tag = 29
-$hastyTouch.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\hastyTouch.png")
+$hastyTouch.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\hastyTouch.png")
 
 $heartSoul = New-Object System.Windows.Forms.Button
 $heartSoul.Tag =  30
-$heartSoul.Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\icons\heartSoul.png")
+$heartSoul.Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\heartSoul.png")
 
 foreach($button in ($ds.Tables[0].Rows | Select-Object -ExpandProperty Key)){
     if(!$button){ continue }
@@ -577,22 +564,16 @@ $otherLbl.Height = 17
                                             <# Craft Controls #>
 
 $useFoodbuff = New-Object System.Windows.Forms.CheckBox
+$useFoodbuff.Text = 'Food Buff'
+$useFoodbuff.CheckAlign = 'MiddleRight'
 $useFoodbuff.AutoSize = $true
 $useFoodbuff.Dock = 'Right'
 
-$useFoodbuffLbl = New-Object System.Windows.Forms.Label
-$useFoodbuffLbl.AutoSize = $true
-$useFoodbuffLbl.Text = 'Food Buff'
-$useFoodbuffLbl.Dock = 'Right'
-
 $useMedicine = New-Object System.Windows.Forms.CheckBox
+$useMedicine.Text = 'Medicine'
+$useMedicine.CheckAlign = 'MiddleRight'
 $useMedicine.AutoSize = $true
 $useMedicine.Dock = 'Right'
-
-$useMedicineLbl = New-Object System.Windows.Forms.Label
-$useMedicineLbl.AutoSize = $true
-$useMedicineLbl.Text = 'Medicine'
-$useMedicineLbl.Dock = 'Right'
 
 $craftLog = New-Object System.Windows.Forms.CheckBox
 $craftLog.AutoSize = $true
@@ -680,7 +661,7 @@ $craftGroup.Controls.AddRange(@($craftOther,$otherLbl,$quality,$qualityLbl,$prog
 $craftGroup2 = New-Object System.Windows.Forms.Panel
 $craftGroup2.Dock = 'Top'
 $craftGroup2.Height = 23
-$craftGroup2.Controls.AddRange(@($useFoodbuffLbl,$useFoodbuff,$useMedicineLbl,$useMedicine,$craftLbl,$craftNumeric,$syncHash.CraftBtn,$syncHash.PauseBtn))
+$craftGroup2.Controls.AddRange(@($useFoodbuff,$useMedicine,$craftLbl,$craftNumeric,$syncHash.CraftBtn,$syncHash.PauseBtn))
 
 $queueTab.Controls.AddRange(@($gearsetGroupBox,$queueGroup,$queueGrid))
 $keybindsTab.Controls.AddRange(@($saveKeybindBtn,$loadKeybindBtn,$medicinePanel,$foodBuffPanel,$craftLogPanel,$confirmPanel,$skillsGrid))

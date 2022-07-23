@@ -38,7 +38,7 @@ $classDropdown.Add_SelectionChangeCommitted({
     $classButtons = @('advancedTouch', 'basicSynth', 'basicTouch', 'delicateSynth', 'focusedSynth', 'focusedTouch', 'groundwork', 'intensiveSynth', 'preciseTouch', 'preparatoryTouch', 'prudentSynth', 'prudentTouch', 'standardTouch')
     if ($this.SelectedItem -ne $null) {
         foreach ($button in $classButtons) {
-            $(Get-Variable -Name $button -ValueOnly).Image = [System.Drawing.Image]::FromFile("$PSScriptRoot\..\icons\$class\$button.png")
+            $(Get-Variable -Name $button -ValueOnly).Image = [System.Drawing.Image]::FromFile("$scriptDir\icons\$class\$button.png")
         }
     }
 })
@@ -129,7 +129,7 @@ $syncHash.PauseQueueBtn.Add_click({
 })
 $syncHash.CraftBtn.Add_click({
     if($craftingGrid.RowCount -eq 1){return}
-    switch($syncHash.CraftQueueBtn.Text) {
+    switch($syncHash.CraftBtn.Text) {
         'Stop' {
             $syncHash.Stop = $true
             $syncHash.PauseBtn.Enabled = $false
@@ -170,7 +170,7 @@ $saveGearset.Add_Click({
     if($duplicates){
         [System.Windows.MessageBox]::Show('Gearset Numbers need to be unique', 'Error', 'OK', 'Error')
     } else {
-        ConvertTo-Json -InputObject $gearsetNumbers -Compress | Out-File -FilePath "$PSScriptRoot\..\gearset.json" -NoNewline
+        ConvertTo-Json -InputObject $gearsetNumbers -Compress | Out-File -FilePath "$scriptDir\gearset.json" -NoNewline
     }
 })
 $loadGearset.Add_Click({
@@ -202,7 +202,7 @@ $clearRotation.Add_Click({
     $clearRotation.Visible = $false
 })
 $loadRecipeBtn.Add_Click({
-    $openFileBrowser.InitialDirectory = "$PSScriptRoot\..\Rotations"
+    $openFileBrowser.InitialDirectory = "$scriptDir\Rotations"
     [void]$openFileBrowser.ShowDialog()
     if(!$openFileBrowser.Filename){return}
     $rotation = Get-Content $openFileBrowser.Filename | ConvertFrom-Json
@@ -222,7 +222,7 @@ $loadRecipeBtn.Add_Click({
 })
 $saveRecipeBtn.Add_Click({
     if($craftingGrid.RowCount -eq 1){return}
-    $saveFileBrowser.InitialDirectory = "$PSScriptRoot\..\Rotations"
+    $saveFileBrowser.InitialDirectory = "$scriptDir\Rotations"
     [void]$saveFileBrowser.ShowDialog()
     if(!$saveFileBrowser.Filename){return}
     $rotation = $craftingGrid.Rows.Cells | Select-Object -SkipLast 1 -ExpandProperty Value | ConvertTo-Json -Compress
@@ -243,7 +243,7 @@ $craftLogTxt.Add_KeyUp({
 $saveKeybindBtn.Add_Click({
     $keybinds = $skillsGrid.DataSource | Select-Object Keybind, Scancode
     $keybindsJson = @{'Keybinds' = $keybinds } | ConvertTo-Json -Compress
-    $keybindsJson | Out-File -FilePath "$PSScriptRoot\..\keybinds.json" -NoNewline
+    $keybindsJson | Out-File -FilePath "$scriptDir\keybinds.json" -NoNewline
     $controlJson = @"
 {
     `"ConfirmKey`" : [
@@ -264,7 +264,7 @@ $saveKeybindBtn.Add_Click({
     ]
 }
 "@
-    $controlJson | Out-File -FilePath "$PSScriptRoot\..\controls.json" -NoNewline
+    $controlJson | Out-File -FilePath "$scriptDir\controls.json" -NoNewline
 })
 $loadKeybindBtn.Add_Click({
     loadKeybinds
@@ -297,9 +297,20 @@ $queueGrid.Add_EditingControlShowing({
     $_.Control.Remove_KeyDown($checkNumeric)
     if(($col -eq 'Crafts') -or ($col -eq 'Materials')) {
         $_.Control.Add_KeyDown($checkNumeric)
-    } elseif(($col -eq 'Rotation') -or ($col -eq 'Crafter'))
-    {
-        [System.Windows.Forms.SendKeys]::Send("{F4}")
+    }
+})
+$queueGrid.Add_CellMouseUp({
+    if ($_.Button -eq 'Right') {
+        $rowIndex = $_.RowIndex
+        if ($rowIndex -ne $this.NewRowIndex) {
+            $this.Rows.RemoveAt($rowIndex)
+            if ($this.NewRowIndex -gt 0) {
+                $clearRotation.Visible = $true
+            }
+            else {
+                $clearRotation.Visible = $false
+            }
+        }
     }
 })
 $skillsGrid.Add_KeyDown({
@@ -422,7 +433,6 @@ $($row.Description)
                 $reflect.Enabled = $false
                 $trainedEye.Enabled = $false
                 $muscleMemory.Enabled = $false
-                $queueBtn.Visible = $true
             }
         })
     }
